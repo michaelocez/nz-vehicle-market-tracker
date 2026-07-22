@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nz-vehicle-market-tracker"
+version = "0.1.0"
+description = "Reproducible feasibility analysis of NZTA vehicle fleet open data"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "ruff>=0.9"]
+
+[project.scripts]
+nzvmt-feasibility = "nz_vehicle_market_tracker.feasibility:main"
+nzvmt-download = "nz_vehicle_market_tracker.downloader:main"
+nzvmt-build = "nz_vehicle_market_tracker.production:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nz_vehicle_market_tracker"]
+
+[tool.pytest.ini_options]
+addopts = "-q --basetemp=.pytest-tmp"
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

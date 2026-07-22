@@ -1,0 +1,463 @@
+{
+  "contract": {
+    "version": "1.0.0",
+    "scope": {
+      "vehicle_type": "PASSENGER CAR/VAN",
+      "classes": [
+        "MA",
+        "MB",
+        "MC"
+      ],
+      "registration_month_from": "2007-01",
+      "import_age_vehicle_year_from": 2007,
+      "legacy_vehicle_years_in_counts": true,
+      "leaderboard_limit_per_month_and_status": 25
+    }
+  },
+  "source": {
+    "file": "Fleet-data-all-vehicle-years.zip",
+    "member": "Fleet-30Jun2026.csv",
+    "snapshot_month": "2026-06"
+  },
+  "generated_at_utc": "2026-07-22T05:51:31.705518+00:00",
+  "quality": {
+    "before_start_month_rows": 396010,
+    "comparable_import_age_rows": 1014841,
+    "comparable_vehicle_year_rows": 2634334,
+    "excluded_import_age_implausible_rows": 33,
+    "excluded_import_age_legacy_vehicle_year_rows": 457528,
+    "excluded_import_age_negative_rows": 9,
+    "included_rows": 3102427,
+    "invalid_registration_month_rows": 7,
+    "legacy_vehicle_year_rows": 468093,
+    "mapped_brand_rows": 3100753,
+    "non_passenger_rows": 2400647,
+    "passenger_rows": 3498444,
+    "source_rows": 5899091,
+    "unmapped_brand_rows": 1674,
+    "used_import_rows": 1472411
+  },
+  "brand_coverage": {
+    "mapped_share": 0.9994604224370146,
+    "unmapped_makes": [
+      {
+        "make": "ABARTH",
+        "registration_count": 5
+      },
+      {
+        "make": "AC",
+        "registration_count": 2
+      },
+      {
+        "make": "ALMAC",
+        "registration_count": 13
+      },
+      {
+        "make": "ALPINA",
+        "registration_count": 1
+      },
+      {
+        "make": "ALPINE",
+        "registration_count": 8
+      },
+      {
+        "make": "ALVIS",
+        "registration_count": 13
+      },
+      {
+        "make": "AM GENERAL",
+        "registration_count": 10
+      },
+      {
+        "make": "AMC",
+        "registration_count": 34
+      },
+      {
+        "make": "AMERICAN",
+        "registration_count": 4
+      },
+      {
+        "make": "AUBURN",
+        "registration_count": 10
+      },
+      {
+        "make": "AUTECH ZAGATO",
+        "registration_count": 1
+      },
+      {
+        "make": "AUTO UNION",
+        "registration_count": 3
+      },
+      {
+        "make": "BOLWELL",
+        "registration_count": 1
+      },
+      {
+        "make": "BORGWARD",
+        "registration_count": 1
+      },
+      {
+        "make": "BRICKLIN",
+        "registration_count": 2
+      },
+      {
+        "make": "BRISTOL",
+        "registration_count": 5
+      },
+      {
+        "make": "BUGATTI",
+        "registration_count": 7
+      },
+      {
+        "make": "CAN-AM",
+        "registration_count": 1
+      },
+      {
+        "make": "CASE",
+        "registration_count": 1
+      },
+      {
+        "make": "CATERHAM",
+        "registration_count": 13
+      },
+      {
+        "make": "CHANDLER",
+        "registration_count": 1
+      },
+      {
+        "make": "CLENET",
+        "registration_count": 1
+      },
+      {
+        "make": "CONTINENTAL",
+        "registration_count": 2
+      },
+      {
+        "make": "CORD",
+        "registration_count": 3
+      },
+      {
+        "make": "COUNTESS",
+        "registration_count": 2
+      },
+      {
+        "make": "CUSTOMBUILT",
+        "registration_count": 6
+      },
+      {
+        "make": "DACIA",
+        "registration_count": 1
+      },
+      {
+        "make": "DAVIS",
+        "registration_count": 1
+      },
+      {
+        "make": "DE LOREAN",
+        "registration_count": 21
+      },
+      {
+        "make": "DE SOTO",
+        "registration_count": 17
+      },
+      {
+        "make": "DE TOMASO",
+        "registration_count": 10
+      },
+      {
+        "make": "DELAGE",
+        "registration_count": 3
+      },
+      {
+        "make": "DIATTO",
+        "registration_count": 1
+      },
+      {
+        "make": "DIXON",
+        "registration_count": 1
+      },
+      {
+        "make": "DS AUTOMOBILES",
+        "registration_count": 2
+      },
+      {
+        "make": "EDSEL",
+        "registration_count": 21
+      },
+      {
+        "make": "ELDDIS",
+        "registration_count": 1
+      },
+      {
+        "make": "ESSEX",
+        "registration_count": 2
+      },
+      {
+        "make": "EUNOS",
+        "registration_count": 7
+      },
+      {
+        "make": "EXCALIBUR",
+        "registration_count": 9
+      },
+      {
+        "make": "FACTORY BUILT",
+        "registration_count": 50
+      },
+      {
+        "make": "GINETTA",
+        "registration_count": 2
+      },
+      {
+        "make": "GRAHAM",
+        "registration_count": 2
+      },
+      {
+        "make": "HILLMAN",
+        "registration_count": 3
+      },
+      {
+        "make": "HINO",
+        "registration_count": 1
+      },
+      {
+        "make": "HOMEBUILT",
+        "registration_count": 5
+      },
+      {
+        "make": "HUDSON",
+        "registration_count": 11
+      },
+      {
+        "make": "HUMBER",
+        "registration_count": 3
+      },
+      {
+        "make": "HUPMOBILE",
+        "registration_count": 5
+      },
+      {
+        "make": "IMPERIAL",
+        "registration_count": 2
+      },
+      {
+        "make": "INTERNATIONAL",
+        "registration_count": 1
+      },
+      {
+        "make": "ISO",
+        "registration_count": 2
+      },
+      {
+        "make": "JENSEN",
+        "registration_count": 16
+      },
+      {
+        "make": "JEWETT",
+        "registration_count": 1
+      },
+      {
+        "make": "JOWETT",
+        "registration_count": 2
+      },
+      {
+        "make": "JUNEYAO",
+        "registration_count": 2
+      },
+      {
+        "make": "KAISER",
+        "registration_count": 2
+      },
+      {
+        "make": "KTM",
+        "registration_count": 2
+      },
+      {
+        "make": "LADA",
+        "registration_count": 1
+      },
+      {
+        "make": "LAGONDA",
+        "registration_count": 3
+      },
+      {
+        "make": "LEYLAND",
+        "registration_count": 20
+      },
+      {
+        "make": "LVV",
+        "registration_count": 566
+      },
+      {
+        "make": "LVVTA",
+        "registration_count": 624
+      },
+      {
+        "make": "MATRA",
+        "registration_count": 1
+      },
+      {
+        "make": "MAYBACH",
+        "registration_count": 1
+      },
+      {
+        "make": "MCC",
+        "registration_count": 25
+      },
+      {
+        "make": "MITSUOKA",
+        "registration_count": 6
+      },
+      {
+        "make": "NASH",
+        "registration_count": 2
+      },
+      {
+        "make": "NSU",
+        "registration_count": 1
+      },
+      {
+        "make": "OAKLAND",
+        "registration_count": 1
+      },
+      {
+        "make": "OVERLAND",
+        "registration_count": 1
+      },
+      {
+        "make": "PAGANI",
+        "registration_count": 1
+      },
+      {
+        "make": "PANTHER",
+        "registration_count": 1
+      },
+      {
+        "make": "RAMBLER",
+        "registration_count": 12
+      },
+      {
+        "make": "RELIANT",
+        "registration_count": 6
+      },
+      {
+        "make": "REWACO",
+        "registration_count": 1
+      },
+      {
+        "make": "RILEY",
+        "registration_count": 8
+      },
+      {
+        "make": "SACHSENRING",
+        "registration_count": 2
+      },
+      {
+        "make": "SATURN",
+        "registration_count": 2
+      },
+      {
+        "make": "SAXON",
+        "registration_count": 1
+      },
+      {
+        "make": "SHAY",
+        "registration_count": 2
+      },
+      {
+        "make": "SHELBY",
+        "registration_count": 2
+      },
+      {
+        "make": "SINGER",
+        "registration_count": 3
+      },
+      {
+        "make": "SKYWORTH",
+        "registration_count": 2
+      },
+      {
+        "make": "STUTZ",
+        "registration_count": 1
+      },
+      {
+        "make": "SWALLOW",
+        "registration_count": 4
+      },
+      {
+        "make": "T CAR",
+        "registration_count": 2
+      },
+      {
+        "make": "TALBOT",
+        "registration_count": 1
+      },
+      {
+        "make": "VETERAN",
+        "registration_count": 3
+      },
+      {
+        "make": "VINTAGE",
+        "registration_count": 4
+      },
+      {
+        "make": "WESTFIELD",
+        "registration_count": 2
+      },
+      {
+        "make": "WOLSELEY",
+        "registration_count": 3
+      }
+    ]
+  },
+  "files": {
+    "monthly_summary": {
+      "path": "monthly_summary.json",
+      "records": 702,
+      "bytes": 66502,
+      "sha256": "9d79f11beea44325f8c6873d662e529b6b779b107d5b1c2dacdfe36b8f65ef38"
+    },
+    "monthly_powertrain": {
+      "path": "monthly_powertrain.json",
+      "records": 2344,
+      "bytes": 287448,
+      "sha256": "db6155604acf769a608cd1b2f7ed57bb3ac45021de19da87de6e966a9b304d81"
+    },
+    "monthly_make": {
+      "path": "monthly_make.json",
+      "records": 22704,
+      "bytes": 3665661,
+      "sha256": "ee0854ad692bf1fa4903e494e0261317386b5b3c27102f3bb5ba8a68b6b3d912"
+    },
+    "monthly_model": {
+      "path": "monthly_model.json",
+      "records": 23013,
+      "bytes": 3070421,
+      "sha256": "5b49ab94a599f497700ce739ce93b87b7fc94439498cb2f5ffed981ceb7de997"
+    },
+    "monthly_brand_country": {
+      "path": "monthly_brand_country.json",
+      "records": 7412,
+      "bytes": 890666,
+      "sha256": "ed03f2b898dc3e4bf1fa05c37f6cbe8bd0f06f0368738929c272840c34e30636"
+    },
+    "monthly_previous_country": {
+      "path": "monthly_previous_country.json",
+      "records": 2613,
+      "bytes": 229451,
+      "sha256": "1c30b3b764d8943c38d0d1215520a32a2296eaeba8a500a3d6a8ed459d2f5aab"
+    },
+    "monthly_vehicle_year": {
+      "path": "monthly_vehicle_year.json",
+      "records": 16371,
+      "bytes": 2229258,
+      "sha256": "a69b8f63a783bcea3782c14de66340863a4919bce7ee98154a8691d195f34717"
+    },
+    "monthly_import_age": {
+      "path": "monthly_import_age.json",
+      "records": 2370,
+      "bytes": 201525,
+      "sha256": "85621089f1d71ce860963d08376feed3a338d75e57590e2109e8d087f4723ab8"
+    }
+  }
+}
