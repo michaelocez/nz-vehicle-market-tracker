@@ -1,0 +1,31 @@
+{
+  "name": "nz-vehicle-market-tracker-web",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "sync:data": "node scripts/sync-data.mjs",
+    "predev": "npm run sync:data",
+    "dev": "vite --port 3000",
+    "prebuild": "npm run sync:data",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "npm run typecheck",
+    "test": "npm run build && node --test tests/static-build.test.mjs"
+  },
+  "dependencies": {
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "typescript": "5.9.3",
+    "vite": "8.0.13"
+  },
+  "type": "module"
+}

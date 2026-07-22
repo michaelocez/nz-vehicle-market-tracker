@@ -1,9 +1,9 @@
 # NZ Vehicle Market Tracker
 
-This repository contains the completed data-feasibility work and the first
-production aggregation pipeline for a portfolio-quality analysis of New
-Zealand's registered vehicle fleet. It does not yet contain a frontend,
-backend, user accounts, or a database.
+This repository contains the completed data-feasibility work, the production
+aggregation pipeline, and a responsive dashboard for a portfolio-quality
+analysis of New Zealand's registered vehicle fleet. The product is static: it
+does not require a backend, user accounts, or a database.
 
 The analysis uses NZTA's all-vehicle-years fleet release and describes vehicles
 as being **first registered in New Zealand** or **entering the NZ fleet**. It
@@ -69,6 +69,24 @@ Run tests with:
 
 ```powershell
 .venv\Scripts\python -m pytest
+```
+
+## Run the dashboard
+
+The frontend lives under `web/`. It reads only the production aggregates, not
+the raw NZTA file. Its development and build commands automatically sync the
+required JSON into an ignored local public-data directory:
+
+```powershell
+cd web
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`. Run the frontend checks and production build with:
+
+```powershell
+npm test
 ```
 
 ## Approved analytical boundaries
