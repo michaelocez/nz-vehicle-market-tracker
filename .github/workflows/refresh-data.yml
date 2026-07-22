@@ -83,3 +83,12 @@ jobs:
           git add data/production/current data/production/archive
           git commit -m "data: refresh NZTA aggregates for $snapshot_month"
           git push origin "HEAD:${{ github.event.repository.default_branch }}"
+
+  deploy:
+    name: Deploy refreshed dashboard
+    needs: refresh
+    uses: ./.github/workflows/deploy-pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

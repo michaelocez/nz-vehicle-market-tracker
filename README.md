@@ -88,6 +88,17 @@ when NZTA has not changed the published snapshot. The workflow requires
 `contents: write` permission for its repository-scoped `GITHUB_TOKEN`; no
 personal token or monthly manual download is required.
 
+## Deployment
+
+The dashboard is published through GitHub Pages at:
+
+https://michaelocez.github.io/nz-vehicle-market-tracker/
+
+The Pages workflow tests and builds `web/dist` whenever `main` changes. The
+monthly data-refresh workflow calls the same deployment after processing, so a
+new NZTA snapshot is published without manual intervention. The repository may
+remain private under an eligible GitHub plan while the Pages website is public.
+
 ## Run the dashboard
 
 The frontend lives under `web/`. It reads only the production aggregates, not
