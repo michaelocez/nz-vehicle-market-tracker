@@ -78,6 +78,9 @@ month and can also be started manually from the repository's **Actions** tab.
 It downloads the current all-vehicle-years ZIP into temporary runner storage,
 runs the Python and frontend tests, and commits only changed aggregate JSON.
 The raw ZIP and fleet CSV are discarded with the runner and never enter Git.
+The workflow uses NZTA's official direct blob URL because the public webpage
+rejects GitHub-hosted automated requests. If NZTA changes that URL, set a
+repository Actions variable named `NZTA_ALL_YEARS_ZIP_URL` to the replacement.
 
 Each changed NZTA snapshot updates `data/production/current/` and is retained
 under `data/production/archive/YYYY-MM/`. Dataset checksums prevent a new commit

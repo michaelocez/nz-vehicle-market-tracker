@@ -18,6 +18,8 @@ jobs:
     name: Download, validate, and publish aggregates
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      NZTA_ALL_YEARS_ZIP_URL: ${{ vars.NZTA_ALL_YEARS_ZIP_URL || 'https://wksprdgisopendata.blob.core.windows.net/motorvehicleregister/Fleet-data-all-vehicle-years.zip' }}
 
     steps:
       - name: Check out the default branch
@@ -43,6 +45,7 @@ jobs:
         shell: bash
         run: |
           zip_path="$(python -m nz_vehicle_market_tracker.downloader \
+            --url "$NZTA_ALL_YEARS_ZIP_URL" \
             --destination-dir "$RUNNER_TEMP/nzta")"
           echo "zip_path=$zip_path" >> "$GITHUB_OUTPUT"
 

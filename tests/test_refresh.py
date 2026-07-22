@@ -56,3 +56,11 @@ def test_ignores_generation_time_when_dataset_checksums_are_unchanged(tmp_path: 
     assert changed is False
     assert month == "2026-06"
     assert json.loads((current / "manifest.json").read_text())["generated_at_utc"] == "existing"
+
+
+def test_refresh_workflow_uses_the_direct_official_zip_url() -> None:
+    workflow = Path(".github/workflows/refresh-data.yml").read_text(encoding="utf-8")
+
+    assert "wksprdgisopendata.blob.core.windows.net" in workflow
+    assert '--url "$NZTA_ALL_YEARS_ZIP_URL"' in workflow
+    assert "vars.NZTA_ALL_YEARS_ZIP_URL" in workflow
