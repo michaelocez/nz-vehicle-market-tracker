@@ -8,6 +8,8 @@ test("build emits a GitHub Pages-compatible static entry point", async () => {
   assert.match(html, /<title>NZ Vehicle Market Tracker<\/title>/i);
   assert.match(html, /<div id="root"><\/div>/i);
   assert.match(html, /(?:src|href)="\.\/assets\//i);
+  assert.match(html, /rel="icon"[^>]+href="\.\/favicon\.png"/i);
+  await access(new URL("../dist/favicon.png", import.meta.url));
   assert.doesNotMatch(html, /_next|_vinext|cloudflare/i);
 });
 
