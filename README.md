@@ -71,6 +71,20 @@ Run tests with:
 .venv\Scripts\python -m pytest
 ```
 
+## Automated monthly refresh
+
+The `Refresh NZTA aggregates` GitHub Actions workflow runs on the 15th of each
+month and can also be started manually from the repository's **Actions** tab.
+It downloads the current all-vehicle-years ZIP into temporary runner storage,
+runs the Python and frontend tests, and commits only changed aggregate JSON.
+The raw ZIP and fleet CSV are discarded with the runner and never enter Git.
+
+Each changed NZTA snapshot updates `data/production/current/` and is retained
+under `data/production/archive/YYYY-MM/`. Dataset checksums prevent a new commit
+when NZTA has not changed the published snapshot. The workflow requires
+`contents: write` permission for its repository-scoped `GITHUB_TOKEN`; no
+personal token or monthly manual download is required.
+
 ## Run the dashboard
 
 The frontend lives under `web/`. It reads only the production aggregates, not

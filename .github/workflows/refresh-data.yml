@@ -1,0 +1,82 @@
+name: Refresh NZTA aggregates
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 04:17 UTC on the 15th of each month (afternoon in New Zealand).
+    - cron: "17 4 15 * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nzta-aggregate-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Download, validate, and publish aggregates
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out the default branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install the data pipeline
+        run: python -m pip install -e ".[dev]"
+
+      - name: Test the data pipeline
+        run: python -m pytest
+
+      - name: Download the current all-vehicle-years release
+        id: download
+        shell: bash
+        run: |
+          zip_path="$(python -m nz_vehicle_market_tracker.downloader \
+            --destination-dir "$RUNNER_TEMP/nzta")"
+          echo "zip_path=$zip_path" >> "$GITHUB_OUTPUT"
+
+      - name: Build and promote changed aggregates
+        run: |
+          python -m nz_vehicle_market_tracker.production \
+            "${{ steps.download.outputs.zip_path }}" \
+            --output-dir "$RUNNER_TEMP/aggregates"
+          python -m nz_vehicle_market_tracker.refresh "$RUNNER_TEMP/aggregates"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Test the dashboard against refreshed data
+        working-directory: web
+        run: |
+          npm ci
+          npm test
+
+      - name: Commit changed aggregate JSON
+        shell: bash
+        run: |
+          if [[ -z "$(git status --porcelain -- data/production)" ]]; then
+            echo "NZTA has not published changed aggregate data; nothing to commit."
+            exit 0
+          fi
+
+          snapshot_month="$(python -c 'import json; print(json.load(open("data/production/current/manifest.json"))["source"]["snapshot_month"])')"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/production/current data/production/archive
+          git commit -m "data: refresh NZTA aggregates for $snapshot_month"
+          git push origin "HEAD:${{ github.event.repository.default_branch }}"
