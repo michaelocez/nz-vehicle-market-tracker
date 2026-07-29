@@ -1,6 +1,6 @@
 {
   "contract": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "scope": {
       "vehicle_type": "PASSENGER CAR/VAN",
       "classes": [
@@ -19,7 +19,7 @@
     "member": "Fleet-30Jun2026.csv",
     "snapshot_month": "2026-06"
   },
-  "generated_at_utc": "2026-07-22T07:56:56.345619+00:00",
+  "generated_at_utc": "2026-07-29T01:49:57.997995+00:00",
   "quality": {
     "before_start_month_rows": 396010,
     "comparable_import_age_rows": 1014841,
@@ -415,49 +415,61 @@
       "path": "monthly_summary.json",
       "records": 702,
       "bytes": 66502,
-      "sha256": "9d79f11beea44325f8c6873d662e529b6b779b107d5b1c2dacdfe36b8f65ef38"
+      "sha256": "adb742dc59b03b30a95748e9d5fbfc51536dfdc679059b0ede254affed3aedb7"
     },
     "monthly_powertrain": {
       "path": "monthly_powertrain.json",
       "records": 2344,
       "bytes": 287448,
-      "sha256": "db6155604acf769a608cd1b2f7ed57bb3ac45021de19da87de6e966a9b304d81"
+      "sha256": "28d30eb0aea770e32bdcf66aff1cea378f3aadf1366344f28de969f834f2a275"
     },
     "monthly_make": {
       "path": "monthly_make.json",
       "records": 22704,
       "bytes": 3665661,
-      "sha256": "ee0854ad692bf1fa4903e494e0261317386b5b3c27102f3bb5ba8a68b6b3d912"
+      "sha256": "d52dedac901ea322d1f217ea9ed3d7145c15cdfc8b9b65ce4244e0e563bb6243"
     },
     "monthly_model": {
       "path": "monthly_model.json",
       "records": 23013,
       "bytes": 3070421,
-      "sha256": "5b49ab94a599f497700ce739ce93b87b7fc94439498cb2f5ffed981ceb7de997"
+      "sha256": "246fb8c8f67679ba6f489e35ca614e7030bcb7f763980eae3dd93330a79bb599"
+    },
+    "scope_make": {
+      "path": "scope_make.json",
+      "records": 573,
+      "bytes": 66826,
+      "sha256": "f2b776c649c7f7f4c95a3dc70da002a5d308a45493026acba071212f19ba39cd"
+    },
+    "scope_model": {
+      "path": "scope_model.json",
+      "records": 8397,
+      "bytes": 734744,
+      "sha256": "60cc69f186ced242ca4d87cdd57eace6ccf4bd545e7225b42ad36098d814b3e9"
     },
     "monthly_brand_country": {
       "path": "monthly_brand_country.json",
       "records": 7412,
       "bytes": 890666,
-      "sha256": "ed03f2b898dc3e4bf1fa05c37f6cbe8bd0f06f0368738929c272840c34e30636"
+      "sha256": "937dce07eea45ddaa7109338e9a3104c94f2c45e69e9faebd9d8c656d0363908"
     },
     "monthly_previous_country": {
       "path": "monthly_previous_country.json",
       "records": 2613,
       "bytes": 229451,
-      "sha256": "1c30b3b764d8943c38d0d1215520a32a2296eaeba8a500a3d6a8ed459d2f5aab"
+      "sha256": "0d64e7d50050216a4d8b6c833d42856351615eae827ad4a43c85fc81d65c3870"
     },
     "monthly_vehicle_year": {
       "path": "monthly_vehicle_year.json",
       "records": 16371,
       "bytes": 2229258,
-      "sha256": "a69b8f63a783bcea3782c14de66340863a4919bce7ee98154a8691d195f34717"
+      "sha256": "64f38937a676c9b94d3d9c2c9a17c4e3850f432a834c80ddccadf3d640bcf9d4"
     },
     "monthly_import_age": {
       "path": "monthly_import_age.json",
       "records": 2370,
       "bytes": 201525,
-      "sha256": "85621089f1d71ce860963d08376feed3a338d75e57590e2109e8d087f4723ab8"
+      "sha256": "d842f06e65711c229194fbedaaae75c5b40573ffc0a9345316fc8d15fde32ea1"
     }
   }
 }

@@ -15,7 +15,7 @@ extracting or copying the raw CSV into the repository.
 - Comparable used-import age rows: 1,014,841
 - Pre-2007 vehicle-year rows retained in counts: 468,093
 - Brand-country mapping coverage: 99.95%
-- Total dimension payload: 10,640,932 bytes
+- Total dimension payload: 11,442,502 bytes
 
 The largest remaining unmapped values are `LVVTA`, `LVV`, and
 `FACTORY BUILT`. They are intentionally not assigned a brand country because
@@ -23,11 +23,15 @@ they are not defensible marques.
 
 ## Output design
 
-Eight frontend-ready JSON dimensions and a checksummed manifest are stored in
+Ten frontend-ready JSON dimensions and a checksummed manifest are stored in
 `data/production/current/`. Leading make and model tables are capped at the top
 25 per month and import-status view, including an `all` view. This reduced the
 model payload from approximately 20.3 MB to 3.1 MB while preserving the intended
 leaderboard use case.
+
+The separate scope-level make and model dimensions retain every category across
+the 2007+ current-snapshot scope. They support exact explorer totals without
+inflating the monthly trend payload or summing a capped leaderboard.
 
 For June 2026, the production scope contains 9,957 NZ-new vehicles, 7,563 used
 imports, and 6 other/re-registration records. The leading makes in the combined
@@ -36,15 +40,12 @@ cohorts in the current fleet snapshot, not retail sales.
 
 ## Verification
 
-- 13 unit/integration tests pass.
+- 19 unit/integration tests pass.
 - Ruff lint and formatting checks pass.
 - Monthly status totals reconcile exactly to all included production rows.
 - Mapped plus unmapped brand rows reconcile exactly to all included rows.
 - Every output file has a SHA-256 hash and record count in `manifest.json`.
 
-## Next milestone
-
-The next implementation step is the responsive static dashboard consuming this
-contract. Scheduled monthly refreshes and aggregate snapshot retention should
-be added after the first dashboard validates which dimensions are actually
-used.
+The dashboard consumes the scope totals in its Make & Model Explorer. The
+scheduled monthly refresh rebuilds and publishes these files with every new
+NZTA snapshot, so the explorer requires no separate manual maintenance.

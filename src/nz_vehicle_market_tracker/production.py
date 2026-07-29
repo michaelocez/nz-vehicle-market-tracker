@@ -26,7 +26,7 @@ from .domain import (
 from .source import ANALYTICAL_COLUMNS, open_fleet_csv
 
 
-DATA_CONTRACT_VERSION = "1.0.0"
+DATA_CONTRACT_VERSION = "1.1.0"
 DEFAULT_START_MONTH = "2007-01"
 DEFAULT_BRAND_REFERENCE = Path("data/reference/brand_countries.csv")
 DEFAULT_OUTPUT_DIR = Path("data/production/current")
@@ -90,11 +90,16 @@ def infer_snapshot_month(member_name: str) -> str | None:
         return None
 
 
-def _records(counter: Counter[tuple], fields: tuple[str, ...]) -> list[dict[str, object]]:
+def _records(
+    counter: Counter[tuple],
+    fields: tuple[str, ...],
+    *,
+    count_field: str = "registration_count",
+) -> list[dict[str, object]]:
     rows = []
     for values, count in sorted(counter.items(), key=lambda item: item[0]):
         row = dict(zip(fields, values, strict=True))
-        row["registration_count"] = count
+        row[count_field] = count
         rows.append(row)
     return rows
 
@@ -141,6 +146,8 @@ def aggregate(
     monthly_powertrain: Counter[tuple[str, str, str]] = Counter()
     monthly_make: Counter[tuple[str, str, str, str, str]] = Counter()
     monthly_model: Counter[tuple[str, str, str, str]] = Counter()
+    scope_make: Counter[tuple[str, str, str, str]] = Counter()
+    scope_model: Counter[tuple[str, str, str]] = Counter()
     monthly_brand_country: Counter[tuple[str, str, str]] = Counter()
     monthly_previous_country: Counter[tuple[str, str]] = Counter()
     monthly_vehicle_year: Counter[tuple[str, str, int, bool]] = Counter()
@@ -193,6 +200,10 @@ def aggregate(
             monthly_make[(month, "all", make, brand, brand_country)] += 1
             monthly_model[(month, status, make, model)] += 1
             monthly_model[(month, "all", make, model)] += 1
+            scope_make[(status, make, brand, brand_country)] += 1
+            scope_make[("all", make, brand, brand_country)] += 1
+            scope_model[(status, make, model)] += 1
+            scope_model[("all", make, model)] += 1
             monthly_brand_country[(month, status, brand_country)] += 1
 
             if status == "used_import":
@@ -237,6 +248,14 @@ def aggregate(
         raise RuntimeError("Monthly summary does not reconcile to included rows")
     if quality["mapped_brand_rows"] + quality["unmapped_brand_rows"] != included:
         raise RuntimeError("Brand coverage does not reconcile to included rows")
+    if sum(count for values, count in scope_make.items() if values[0] == "all") != included:
+        raise RuntimeError("Scope make totals do not reconcile to included rows")
+    if sum(count for values, count in scope_make.items() if values[0] != "all") != included:
+        raise RuntimeError("Scope make status totals do not reconcile to included rows")
+    if sum(count for values, count in scope_model.items() if values[0] == "all") != included:
+        raise RuntimeError("Scope model totals do not reconcile to included rows")
+    if sum(count for values, count in scope_model.items() if values[0] != "all") != included:
+        raise RuntimeError("Scope model status totals do not reconcile to included rows")
 
     return {
         "contract": {
@@ -283,6 +302,16 @@ def aggregate(
                 monthly_model,
                 ("registration_month", "import_status_group", "make", "model"),
                 group_fields=2,
+            ),
+            "scope_make": _records(
+                scope_make,
+                ("import_status_group", "make", "brand", "brand_country"),
+                count_field="vehicle_count",
+            ),
+            "scope_model": _records(
+                scope_model,
+                ("import_status_group", "make", "model"),
+                count_field="vehicle_count",
             ),
             "monthly_brand_country": _records(
                 monthly_brand_country,

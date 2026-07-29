@@ -52,7 +52,8 @@ ignored `data/cache/` directory:
 ## Build production aggregates
 
 The production build applies the approved scope and writes checksummed JSON
-dimensions under `data/production/current/`:
+dimensions under `data/production/current/`, including complete make/model
+snapshot totals for the dashboard explorer:
 
 ```powershell
 .venv\Scripts\python -m nz_vehicle_market_tracker.production `
