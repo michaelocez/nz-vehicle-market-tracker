@@ -6,6 +6,8 @@ type SummaryRecord = CountRecord & { import_status_group: string };
 type PowertrainRecord = SummaryRecord & { powertrain_group: string };
 type MakeRecord = SummaryRecord & { make: string; brand: string; brand_country: string; rank: number };
 type ModelRecord = SummaryRecord & { make: string; model: string; rank: number };
+type ScopeMakeRecord = { import_status_group: string; make: string; brand: string; brand_country: string; vehicle_count: number };
+type ScopeModelRecord = { import_status_group: string; make: string; model: string; vehicle_count: number };
 type CountryRecord = CountRecord & { previous_country: string };
 type AgeRecord = CountRecord & { approximate_import_age: number };
 type DataFile<T> = { contract_version: string; snapshot_month: string; records: T[] };
@@ -20,6 +22,8 @@ type DashboardData = {
   powertrain: DataFile<PowertrainRecord>;
   makes: DataFile<MakeRecord>;
   models: DataFile<ModelRecord>;
+  scopeMakes: DataFile<ScopeMakeRecord>;
+  scopeModels: DataFile<ScopeModelRecord>;
   countries: DataFile<CountryRecord>;
   ages: DataFile<AgeRecord>;
 };
@@ -44,6 +48,10 @@ function prettyMonth(value: string) {
 
 function percent(value: number) {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+function makeOptionLabel(row: ScopeMakeRecord) {
+  return row.make === row.brand.toUpperCase() ? row.brand : `${row.brand} — ${row.make}`;
 }
 
 function annualise(records: SummaryRecord[], range: Range) {
@@ -88,6 +96,8 @@ export default function Home() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState(false);
   const [range, setRange] = useState<Range>("10y");
+  const [selectedMake, setSelectedMake] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
 
   useEffect(() => {
     const files = [
@@ -96,6 +106,8 @@ export default function Home() {
       "monthly_powertrain.json",
       "monthly_make.json",
       "monthly_model.json",
+      "scope_make.json",
+      "scope_model.json",
       "monthly_previous_country.json",
       "monthly_import_age.json",
     ];
@@ -103,8 +115,8 @@ export default function Home() {
       if (!response.ok) throw new Error(file);
       return response.json();
     })))
-      .then(([manifest, summary, powertrain, makes, models, countries, ages]) => {
-        setData({ manifest, summary, powertrain, makes, models, countries, ages });
+      .then(([manifest, summary, powertrain, makes, models, scopeMakes, scopeModels, countries, ages]) => {
+        setData({ manifest, summary, powertrain, makes, models, scopeMakes, scopeModels, countries, ages });
       })
       .catch(() => setError(true));
   }, []);
@@ -164,8 +176,42 @@ export default function Home() {
     };
   }, [data, range]);
 
+  const explorer = useMemo(() => {
+    if (!data) return null;
+    const makeRecords = data.scopeMakes.records.filter((row) => row.import_status_group === "all");
+    const defaultMake = [...makeRecords].sort((a, b) => b.vehicle_count - a.vehicle_count)[0];
+    const makeOptions = makeRecords
+      .sort((a, b) => makeOptionLabel(a).localeCompare(makeOptionLabel(b)));
+    const mappedMakeOptions = makeOptions.filter((row) => row.brand_country !== "Unmapped");
+    const unmappedMakeOptions = makeOptions.filter((row) => row.brand_country === "Unmapped");
+    const make = selectedMake || defaultMake?.make || "";
+    const makeRecord = makeOptions.find((row) => row.make === make);
+    const modelOptions = data.scopeModels.records
+      .filter((row) => row.import_status_group === "all" && row.make === make)
+      .sort((a, b) => a.model.localeCompare(b.model));
+    const model = selectedModel && modelOptions.some((row) => row.model === selectedModel)
+      ? selectedModel
+      : "";
+    const records = model
+      ? data.scopeModels.records.filter((row) => row.make === make && row.model === model)
+      : data.scopeMakes.records.filter((row) => row.make === make);
+    const countFor = (status: string) => records.find((row) => row.import_status_group === status)?.vehicle_count ?? 0;
+    return {
+      make,
+      model,
+      makeRecord,
+      mappedMakeOptions,
+      unmappedMakeOptions,
+      modelOptions,
+      total: countFor("all"),
+      nzNew: countFor("nz_new"),
+      used: countFor("used_import"),
+      other: countFor("other_or_unknown"),
+    };
+  }, [data, selectedMake, selectedModel]);
+
   if (error) return <ErrorState />;
-  if (!data || !view) {
+  if (!data || !view || !explorer) {
     return <main className="state-page"><div className="loading-line" aria-label="Loading dashboard" /></main>;
   }
 
@@ -180,6 +226,7 @@ export default function Home() {
             <a href="#market">Market</a>
             <a href="#vehicles">Vehicles</a>
             <a href="#imports">Imports</a>
+            <a href="#explorer">Explorer</a>
             <a href="#methodology">Methodology</a>
           </div>
         </nav>
@@ -320,13 +367,72 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="section section-tint" id="explorer">
+        <div className="wrap">
+          <div className="section-heading"><div><span className="section-number">04</span><h2>Find a make or model</h2></div></div>
+          <p className="section-lead">Explore exact totals across the current snapshot, beyond the monthly top-five rankings.</p>
+
+          <div className="explorer-grid">
+            <div className="explorer-controls">
+              <div>
+                <label htmlFor="make-select">Make</label>
+                <select
+                  id="make-select"
+                  value={explorer.make}
+                  onChange={(event) => {
+                    setSelectedMake(event.target.value);
+                    setSelectedModel("");
+                  }}
+                >
+                  <optgroup label="Recognised makes">
+                    {explorer.mappedMakeOptions.map((row) => <option key={row.make} value={row.make}>{makeOptionLabel(row)}</option>)}
+                  </optgroup>
+                  {explorer.unmappedMakeOptions.length > 0 && (
+                    <optgroup label="Other / unmapped source makes">
+                      {explorer.unmappedMakeOptions.map((row) => <option key={row.make} value={row.make}>{makeOptionLabel(row)}</option>)}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="model-select">Model</label>
+                <select id="model-select" value={explorer.model} onChange={(event) => setSelectedModel(event.target.value)}>
+                  <option value="">All {explorer.makeRecord?.brand ?? explorer.make} models</option>
+                  {explorer.modelOptions.map((row) => <option key={row.model} value={row.model}>{row.model}</option>)}
+                </select>
+              </div>
+              <p>Model labels follow NZTA source categories, so related variants may appear separately.</p>
+            </div>
+
+            <article className="explorer-result" aria-live="polite">
+              <span className="panel-kicker">CURRENT SNAPSHOT · 2007+ SCOPE</span>
+              <div className="explorer-title">
+                <div><h3>{explorer.model || explorer.makeRecord?.brand || explorer.make}</h3><p>{explorer.model ? explorer.makeRecord?.brand : explorer.makeRecord?.brand_country}</p></div>
+                <strong>{number.format(explorer.total)}<small>vehicles represented</small></strong>
+              </div>
+              <div className="explorer-meter" aria-label={`${number.format(explorer.nzNew)} NZ-new and ${number.format(explorer.used)} used imports`}>
+                <i style={{ width: `${explorer.total ? (explorer.nzNew / explorer.total) * 100 : 0}%` }} />
+                <em style={{ width: `${explorer.total ? (explorer.used / explorer.total) * 100 : 0}%` }} />
+              </div>
+              <div className="explorer-breakdown">
+                <span><b>{number.format(explorer.nzNew)}</b>NZ-new</span>
+                <span><b>{number.format(explorer.used)}</b>Used imports</span>
+                <span><b>{number.format(explorer.other)}</b>Other / unknown</span>
+                <span><b>{percent(explorer.total / data.manifest.quality.included_rows)}</b>of scoped fleet</span>
+              </div>
+              <p className="explorer-note">Vehicles represented in the current NZTA fleet snapshot that were first registered in New Zealand from 2007 onward.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section className="methodology" id="methodology">
         <div className="wrap methodology-grid">
           <div><span className="eyebrow">READ THE NUMBERS CAREFULLY</span><h2>A focused view of ordinary passenger vehicles.</h2></div>
           <div className="method-copy">
             <p>This dashboard includes NZTA <strong>PASSENGER CAR/VAN</strong> records in classes MA, MB and MC, first registered in New Zealand from January 2007 onward.</p>
             <p>It excludes motorcycles, trucks, buses, trailers, caravans, ATVs, tractors and special-purpose machinery. Earlier cohorts reconstructed from the current fleet carry survivorship bias.</p>
-            <div className="method-stats"><span><b>{compact.format(data.manifest.quality.included_rows)}</b> scoped records</span><span><b>{percent(data.manifest.brand_coverage.mapped_share)}</b> brand mapping</span><span><b>v1.0</b> data contract</span></div>
+            <div className="method-stats"><span><b>{compact.format(data.manifest.quality.included_rows)}</b> scoped records</span><span><b>{percent(data.manifest.brand_coverage.mapped_share)}</b> brand mapping</span><span><b>v1.1</b> data contract</span></div>
           </div>
         </div>
       </section>

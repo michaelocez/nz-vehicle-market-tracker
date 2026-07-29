@@ -1,6 +1,6 @@
 # Production data contract
 
-Contract version: `1.0.0`
+Contract version: `1.1.0`
 
 ## Inclusion rules
 
@@ -32,6 +32,8 @@ Every file contains `contract_version`, `snapshot_month`, and `records`.
 | `monthly_powertrain.json` | month x import status x powertrain group |
 | `monthly_make.json` | month x import status x leading make/brand/country |
 | `monthly_model.json` | month x import status x leading make/model |
+| `scope_make.json` | import status x make/brand/country across the full 2007+ scope |
+| `scope_model.json` | import status x make/model across the full 2007+ scope |
 | `monthly_brand_country.json` | month x import status x marque-origin country |
 | `monthly_previous_country.json` | month x previous country, used imports only |
 | `monthly_vehicle_year.json` | month x import status x vehicle year x comparability |
@@ -39,7 +41,16 @@ Every file contains `contract_version`, `snapshot_month`, and `records`.
 
 Make and model outputs retain the top 25 entries for every month and status
 view. They also contain an `all` status view and a deterministic `rank` field.
-Other dimensions retain all aggregate categories.
+The separate `scope_make.json` and `scope_model.json` files retain every make
+and model category in the current snapshot for exact explorer totals. Their
+count field is `vehicle_count` because these are current-fleet snapshot counts,
+not counts for one registration month. Other dimensions retain all aggregate
+categories.
+
+Scope totals mean vehicles represented in the current NZTA fleet snapshot that
+were first registered in New Zealand from January 2007 onward. They must not be
+described as every vehicle currently in New Zealand. Model names are NZTA source
+categories and are not consolidated into editorial model families.
 
 ## Group definitions
 

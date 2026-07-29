@@ -77,6 +77,22 @@ def test_production_scope_and_age_boundary(tmp_path: Path) -> None:
     assert result["quality"]["before_start_month_rows"] == 1
     assert sum(row["registration_count"] for row in result["datasets"]["monthly_summary"]) == 3
     assert sum(row["registration_count"] for row in result["datasets"]["monthly_import_age"]) == 1
+    assert (
+        sum(
+            row["vehicle_count"]
+            for row in result["datasets"]["scope_make"]
+            if row["import_status_group"] == "all"
+        )
+        == 3
+    )
+    assert (
+        sum(
+            row["vehicle_count"]
+            for row in result["datasets"]["scope_model"]
+            if row["import_status_group"] == "all"
+        )
+        == 3
+    )
     assert any(
         row["vehicle_year"] == 2005 and row["age_comparable"] is False
         for row in result["datasets"]["monthly_vehicle_year"]
@@ -95,12 +111,32 @@ def test_writes_checksummed_dimension_files(tmp_path: Path) -> None:
     manifest = write_outputs(result, output)
 
     assert (output / "manifest.json").is_file()
-    assert len(manifest["files"]) == 8
+    assert len(manifest["files"]) == 10
     monthly_summary = json.loads((output / "monthly_summary.json").read_text())
-    assert monthly_summary["contract_version"] == "1.0.0"
+    assert monthly_summary["contract_version"] == "1.1.0"
     assert monthly_summary["snapshot_month"] == "2026-06"
 
 
 def test_infers_snapshot_month() -> None:
     assert infer_snapshot_month("Fleet-30Jun2026.csv") == "2026-06"
     assert infer_snapshot_month("Fleet-test.csv") is None
+
+
+def test_scope_model_totals_are_not_limited_by_monthly_leaderboard(tmp_path: Path) -> None:
+    source = tmp_path / "fleet.zip"
+    _write_zip(source, [_row(MODEL=f"MODEL {index:02}") for index in range(26)])
+    result = aggregate(
+        source,
+        BrandReference({"TOYOTA": BrandInfo("Toyota", "Japan")}),
+    )
+
+    monthly_all = [
+        row for row in result["datasets"]["monthly_model"] if row["import_status_group"] == "all"
+    ]
+    scope_all = [
+        row for row in result["datasets"]["scope_model"] if row["import_status_group"] == "all"
+    ]
+
+    assert len(monthly_all) == 25
+    assert len(scope_all) == 26
+    assert sum(row["vehicle_count"] for row in scope_all) == 26
