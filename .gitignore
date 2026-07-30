@@ -6,7 +6,6 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
-graphify-out/
 
 # Raw and temporary NZTA data must never be committed.
 data/raw/

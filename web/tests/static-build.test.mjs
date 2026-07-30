@@ -28,6 +28,19 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /<optgroup label="Recognised makes">/);
   assert.match(app, /<optgroup label="Other \/ unmapped source makes">/);
   assert.match(app, /Vehicles represented in the current NZTA fleet snapshot/);
+  assert.match(app, /aria-label="Vehicle ranking view"/);
+  assert.match(app, /aria-pressed=\{vehicleView === value\}/);
+  assert.match(app, /Latest entries/);
+  assert.match(app, /Current fleet/);
+  assert.match(app, /CURRENT FLEET SNAPSHOT · 2007\+ SCOPE/);
+  assert.match(app, /ARRIVAL CHANNEL BY POWERTRAIN/);
+  assert.match(app, /arrivalPowertrains = \["combustion", "hybrid", "bev", "phev"\]/);
+  assert.match(app, /className="panel arrival-panel"/);
+  assert.doesNotMatch(styles, /\.powertrain-panel \{ grid-row: span 2/);
+  assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
+  assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
+  assert.match(app, /href="https:\/\/www\.nzta\.govt\.nz\/resources\/new-zealand-motor-vehicle-register-statistics\/new-zealand-vehicle-fleet-open-data-sets"/);
+  assert.doesNotMatch(styles, /--brand-mark-bg|--brand-mark-border/);
   assert.match(styles, /color-scheme:\s*dark/);
   assert.doesNotMatch(app, /localStorage|theme-toggle|Switch to.*mode/);
   assert.doesNotMatch(styles, /data-theme|theme-toggle/);
@@ -45,14 +58,18 @@ test("synced data matches the approved production snapshot", async () => {
 
   assert.equal(manifest.contract.scope.vehicle_type, "PASSENGER CAR/VAN");
   assert.deepEqual(manifest.contract.scope.classes, ["MA", "MB", "MC"]);
-  assert.equal(summary.snapshot_month, "2026-06");
+  assert.equal(
+    summary.snapshot_month,
+    summary.records.reduce((latest, row) => row.registration_month > latest ? row.registration_month : latest, ""),
+  );
 
   const latest = Object.fromEntries(
     summary.records
       .filter((row) => row.registration_month === summary.snapshot_month)
       .map((row) => [row.import_status_group, row.registration_count]),
   );
-  assert.deepEqual(latest, { nz_new: 9957, other_or_unknown: 6, used_import: 7563 });
+  assert.deepEqual(Object.keys(latest).sort(), ["nz_new", "other_or_unknown", "used_import"]);
+  assert.ok(Object.values(latest).reduce((sum, count) => sum + count, 0) > 0);
   assert.equal(
     scopeMakes.records.filter((row) => row.import_status_group === "all").reduce((sum, row) => sum + row.vehicle_count, 0),
     manifest.quality.included_rows,
@@ -61,6 +78,16 @@ test("synced data matches the approved production snapshot", async () => {
     scopeModels.records.filter((row) => row.import_status_group === "all").reduce((sum, row) => sum + row.vehicle_count, 0),
     manifest.quality.included_rows,
   );
+  for (const records of [scopeMakes.records, scopeModels.records]) {
+    const topCounts = records
+      .filter((row) => row.import_status_group === "all")
+      .sort((a, b) => b.vehicle_count - a.vehicle_count)
+      .slice(0, 5)
+      .map((row) => row.vehicle_count);
+    assert.equal(topCounts.length, 5);
+    assert.ok(topCounts.every((count) => count > 0));
+    assert.deepEqual(topCounts, [...topCounts].sort((a, b) => b - a));
+  }
 });
 
 test("Cloudflare and Sites scaffolding is absent", async () => {

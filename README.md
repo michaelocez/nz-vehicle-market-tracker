@@ -72,10 +72,11 @@ Run tests with:
 .venv\Scripts\python -m pytest
 ```
 
-## Automated monthly refresh
+## Automated data refresh
 
-The `Refresh NZTA aggregates` GitHub Actions workflow runs on the 15th of each
-month and can also be started manually from the repository's **Actions** tab.
+The `Refresh NZTA aggregates` GitHub Actions workflow checks for a new NZTA
+release every Monday and can also be started manually from the repository's
+**Actions** tab.
 It downloads the current all-vehicle-years ZIP into temporary runner storage,
 runs the Python and frontend tests, and commits only changed aggregate JSON.
 The raw ZIP and fleet CSV are discarded with the runner and never enter Git.
@@ -105,6 +106,9 @@ remain private under an eligible GitHub plan while the Pages website is public.
 The frontend lives under `web/`. It reads only the production aggregates, not
 the raw NZTA file. Its development and build commands automatically sync the
 required JSON into an ignored local public-data directory:
+
+The vehicle rankings can switch between the latest entry month and totals
+represented across the current 2007+ scoped fleet snapshot.
 
 ```powershell
 cd web
