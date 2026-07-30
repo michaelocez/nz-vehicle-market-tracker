@@ -12,9 +12,6 @@
   --grid-line: rgba(247,248,248,.08);
   --primary: #5e6ad2;
   --primary-hover: #828fff;
-  --brand-mark-bg: #5e6ad2;
-  --brand-mark-text: #ffffff;
-  --brand-mark-border: #5e6ad2;
   --series-new: #828fff;
   --series-used: #8a8f98;
   --series-context: #5e6ad2;
@@ -35,7 +32,8 @@ button { font: inherit; }
 .hero::after { content: ""; position: absolute; inset: auto 0 0; height: 2px; background: var(--primary); }
 .nav { height: 72px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); position: relative; z-index: 2; }
 .brand-mark { display: flex; align-items: center; gap: 14px; font-size: 14px; letter-spacing: .03em; }
-.brand-mark span { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--brand-mark-border); border-radius: 8px; background: var(--brand-mark-bg); color: var(--brand-mark-text); font-weight: 700; transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+.brand-mark span { color: #f6f5eb; font-size: 15px; font-weight: 800; letter-spacing: .08em; }
+.brand-mark:hover span { color: var(--primary-hover); }
 .nav-links { display: flex; gap: 30px; font-size: 13px; color: #cbd8d5; }
 .nav-links a:hover { color: var(--primary-hover); }
 .hero-content { min-height: 590px; padding-block: 92px 70px; display: grid; grid-template-columns: 1.45fr .75fr; gap: 96px; align-items: center; position: relative; z-index: 1; }
@@ -65,6 +63,8 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .range-control button { border: 0; background: transparent; color: var(--ink-soft); border-radius: 100px; padding: 8px 15px; font-size: 12px; font-weight: 700; cursor: pointer; }
 .range-control button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .range-control button.active { background: var(--surface-raised); color: var(--ink); }
+.vehicle-view-control { flex-shrink: 0; }
+.vehicle-view-control button { padding-inline: 17px; }
 .chart-card, .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
 .market-card { padding: 34px 36px 24px; }
 .chart-key { display: flex; justify-content: flex-end; gap: 22px; font-size: 12px; color: var(--ink-soft); }
@@ -89,7 +89,6 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 
 .dashboard-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 20px; }
 .panel { padding: 34px; }
-.powertrain-panel { grid-row: span 2; }
 .panel-heading { display: flex; justify-content: space-between; gap: 30px; align-items: start; }
 .panel-heading.simple { display: block; }
 .panel-heading h3 { font-size: 28px; line-height: 1.2; letter-spacing: -.6px; font-weight: 600; margin: 13px 0 0; }
@@ -101,6 +100,22 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .bar-row em { height: 100%; display: block; background: var(--series-muted); }
 .bar-row:first-child em { background: var(--series-new); }
 .bar-row:nth-child(2) em { background: var(--series-context); }
+.arrival-mix-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.arrival-key { display: flex; gap: 14px; color: var(--ink-soft); font-size: 10px; }
+.arrival-key span { display: flex; align-items: center; gap: 5px; }
+.arrival-key span::before { content: ""; width: 7px; height: 7px; background: var(--series-new); }
+.arrival-key span:nth-child(2)::before { background: var(--series-used); }
+.arrival-key span:nth-child(3)::before { background: var(--series-muted); }
+.arrival-mix-list { display: grid; gap: 15px; margin-top: 20px; }
+.arrival-mix-row > div:first-child { display: grid; grid-template-columns: 115px 1fr auto; align-items: baseline; gap: 14px; margin-bottom: 7px; }
+.arrival-mix-row span { font-size: 12px; }
+.arrival-mix-row small { color: var(--ink-soft); font-size: 10px; }
+.arrival-mix-row b { font-size: 11px; }
+.arrival-track { height: 7px; display: flex; overflow: hidden; background: var(--track); }
+.arrival-track i { display: block; height: 100%; }
+.arrival-new { background: var(--series-new); }
+.arrival-used { background: var(--series-used); }
+.arrival-other { background: var(--series-muted); }
 .ranking-panel ol { list-style: none; padding: 0; margin: 20px 0 0; }
 .ranking-panel li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; padding: 13px 0; border-top: 1px solid var(--line); }
 .ranking-panel .rank { font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--primary-hover); }
@@ -157,6 +172,8 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .footer { min-height: 112px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
 .footer > span { font-weight: 800; }
 .footer p { color: var(--ink-soft); }
+.footer a { color: var(--ink); border-bottom: 1px solid var(--line-strong); }
+.footer a:hover { color: var(--primary-hover); border-color: var(--primary-hover); }
 
 .state-page { min-height: 100vh; background: var(--navy); color: white; display: grid; place-items: center; padding: 30px; }
 .state-card { max-width: 620px; border: 1px solid rgba(255,255,255,.2); padding: 44px; }
@@ -170,7 +187,6 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
   .hero-content { grid-template-columns: 1fr; gap: 45px; padding-block: 65px; }
   .hero-stat { max-width: 500px; }
   .dashboard-grid, .imports-grid, .explorer-grid, .methodology-grid { grid-template-columns: 1fr; }
-  .powertrain-panel { grid-row: auto; }
   .methodology-grid { gap: 45px; }
   .hero { min-height: auto; }
 }
@@ -186,8 +202,12 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
   .hero-intro { font-size: 16px; }
   .section { padding-block: 72px; }
   .section-heading { align-items: start; flex-direction: column; }
+  .vehicle-view-control { max-width: 100%; }
+  .vehicle-view-control button { padding-inline: 13px; }
   .section-lead { margin-left: 0; }
   .market-card, .panel { padding: 24px 20px; }
+  .arrival-mix-heading { align-items: start; flex-direction: column; gap: 12px; }
+  .arrival-mix-row > div:first-child { grid-template-columns: 100px 1fr auto; gap: 8px; }
   .year-chart { height: 290px; gap: 7px; }
   .year-bars { height: 245px; }
   .year-column { min-width: 28px; }

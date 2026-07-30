@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Range = "5y" | "10y" | "all";
+type VehicleView = "latest" | "snapshot";
 type CountRecord = { registration_month: string; registration_count: number };
 type SummaryRecord = CountRecord & { import_status_group: string };
 type PowertrainRecord = SummaryRecord & { powertrain_group: string };
@@ -41,6 +42,8 @@ const powertrainLabel: Record<string, string> = {
   hydrogen_fuel_cell: "Hydrogen fuel cell",
   other_or_unknown: "Other / unknown",
 };
+
+const arrivalPowertrains = ["combustion", "hybrid", "bev", "phev"];
 
 function prettyMonth(value: string) {
   return monthLabel.format(new Date(`${value}-01T00:00:00Z`));
@@ -96,6 +99,7 @@ export default function Home() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState(false);
   const [range, setRange] = useState<Range>("10y");
+  const [vehicleView, setVehicleView] = useState<VehicleView>("latest");
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
 
@@ -131,22 +135,49 @@ export default function Home() {
     const latestTotal = nzNew + used + other;
     const annual = annualise(data.summary.records, range);
     const annualMax = Math.max(...annual.flatMap((row) => [row.nz_new, row.used_import]));
-    const latestPowertrain = data.powertrain.records.filter((row) => row.registration_month === latest);
-    const powertrains = [...latestPowertrain.reduce((map, row) => {
+    const displayedPowertrain = vehicleView === "latest"
+      ? data.powertrain.records.filter((row) => row.registration_month === latest)
+      : data.powertrain.records;
+    const powertrains = [...displayedPowertrain.reduce((map, row) => {
       map.set(row.powertrain_group, (map.get(row.powertrain_group) ?? 0) + row.registration_count);
       return map;
     }, new Map<string, number>())]
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
+    const arrivalMix = arrivalPowertrains.map((name) => {
+      const records = displayedPowertrain.filter((row) => row.powertrain_group === name);
+      const countFor = (status: string) => records
+        .filter((row) => row.import_status_group === status)
+        .reduce((sum, row) => sum + row.registration_count, 0);
+      return {
+        name,
+        total: records.reduce((sum, row) => sum + row.registration_count, 0),
+        nzNew: countFor("nz_new"),
+        used: countFor("used_import"),
+        other: countFor("other_or_unknown"),
+      };
+    });
     const powertrainMax = Math.max(...powertrains.map((row) => row.value));
-    const topMakes = data.makes.records
-      .filter((row) => row.registration_month === latest && row.import_status_group === "all")
-      .sort((a, b) => a.rank - b.rank)
-      .slice(0, 5);
-    const topModels = data.models.records
-      .filter((row) => row.registration_month === latest && row.import_status_group === "all")
-      .sort((a, b) => a.rank - b.rank)
-      .slice(0, 5);
+    const topMakes = vehicleView === "latest"
+      ? data.makes.records
+        .filter((row) => row.registration_month === latest && row.import_status_group === "all")
+        .sort((a, b) => a.rank - b.rank)
+        .slice(0, 5)
+      : data.scopeMakes.records
+        .filter((row) => row.import_status_group === "all")
+        .sort((a, b) => b.vehicle_count - a.vehicle_count)
+        .slice(0, 5)
+        .map((row, index) => ({ ...row, rank: index + 1, registration_count: row.vehicle_count }));
+    const topModels = vehicleView === "latest"
+      ? data.models.records
+        .filter((row) => row.registration_month === latest && row.import_status_group === "all")
+        .sort((a, b) => a.rank - b.rank)
+        .slice(0, 5)
+      : data.scopeModels.records
+        .filter((row) => row.import_status_group === "all")
+        .sort((a, b) => b.vehicle_count - a.vehicle_count)
+        .slice(0, 5)
+        .map((row, index) => ({ ...row, rank: index + 1, registration_count: row.vehicle_count }));
     const topCountries = data.countries.records
       .filter((row) => row.registration_month === latest)
       .sort((a, b) => b.registration_count - a.registration_count)
@@ -169,12 +200,16 @@ export default function Home() {
     const electric = powertrains
       .filter((row) => ["bev", "phev"].includes(row.name))
       .reduce((sum, row) => sum + row.value, 0);
+    const vehicleTotal = powertrains.reduce((sum, row) => sum + row.value, 0);
+    const vehicleLabel = vehicleView === "latest"
+      ? prettyMonth(latest).toUpperCase()
+      : "CURRENT FLEET SNAPSHOT · 2007+";
     return {
-      latest, nzNew, used, latestTotal, annual, annualMax, powertrains, powertrainMax,
+      latest, nzNew, used, latestTotal, annual, annualMax, powertrains, powertrainMax, arrivalMix,
       topMakes, topModels, topCountries, countryMax, ageBuckets, ageMax,
-      medianAge: weightedMedian(latestAges), electric,
+      medianAge: weightedMedian(latestAges), electric, vehicleTotal, vehicleLabel,
     };
-  }, [data, range]);
+  }, [data, range, vehicleView]);
 
   const explorer = useMemo(() => {
     if (!data) return null;
@@ -244,7 +279,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hero-stat" aria-label={`${number.format(view.latestTotal)} passenger vehicles entered the fleet in ${prettyMonth(view.latest)}`}>
-            <span className="stat-kicker">Latest month</span>
+            <span className="stat-kicker">{prettyMonth(view.latest)}</span>
             <strong>{number.format(view.latestTotal)}</strong>
             <span>passenger vehicles entered the NZ fleet</span>
             <div className="split-meter" aria-hidden="true">
@@ -296,12 +331,30 @@ export default function Home() {
 
       <section className="section section-tint" id="vehicles">
         <div className="wrap">
-          <div className="section-heading"><div><span className="section-number">02</span><h2>What is entering the fleet?</h2></div></div>
-          <p className="section-lead">The powertrains, makes and models shaping the latest month.</p>
+          <div className="section-heading">
+            <div><span className="section-number">02</span><h2>What shapes the fleet?</h2></div>
+            <div className="range-control vehicle-view-control" aria-label="Vehicle ranking view">
+              {(["latest", "snapshot"] as VehicleView[]).map((value) => (
+                <button
+                  key={value}
+                  className={vehicleView === value ? "active" : ""}
+                  aria-pressed={vehicleView === value}
+                  onClick={() => setVehicleView(value)}
+                >
+                  {value === "latest" ? "Latest entries" : "Current fleet"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="section-lead">
+            {vehicleView === "latest"
+              ? "The powertrains, makes and models shaping the latest month."
+              : "The powertrains, makes and models represented across the current scoped fleet."}
+          </p>
 
           <div className="dashboard-grid">
             <article className="panel powertrain-panel">
-              <div className="panel-heading"><div><span className="panel-kicker">POWERTRAIN</span><h3>Combustion still leads.<br />Electrified cars are visible.</h3></div><strong>{percent(view.electric / view.latestTotal)}<small>BEV + PHEV</small></strong></div>
+              <div className="panel-heading"><div><span className="panel-kicker">POWERTRAIN · {view.vehicleLabel}</span><h3>Combustion still leads.<br />Electrified cars are visible.</h3></div><strong>{percent(view.electric / view.vehicleTotal)}<small>BEV + PHEV</small></strong></div>
               <div className="bar-list">
                 {view.powertrains.slice(0, 6).map((row) => (
                   <div className="bar-row" key={row.name}>
@@ -313,7 +366,7 @@ export default function Home() {
             </article>
 
             <article className="panel ranking-panel">
-              <span className="panel-kicker">TOP MAKES · {prettyMonth(view.latest).toUpperCase()}</span>
+              <span className="panel-kicker">TOP MAKES · {view.vehicleLabel}</span>
               <ol>
                 {view.topMakes.map((row) => (
                   <li key={row.make}><span className="rank">{String(row.rank).padStart(2, "0")}</span><div><strong>{row.brand}</strong><small>{row.brand_country}</small></div><b>{number.format(row.registration_count)}</b></li>
@@ -321,8 +374,27 @@ export default function Home() {
               </ol>
             </article>
 
+            <article className="panel arrival-panel">
+              <div className="arrival-mix-heading">
+                <span className="panel-kicker">ARRIVAL CHANNEL BY POWERTRAIN</span>
+                <div className="arrival-key" aria-hidden="true"><span>NZ-new</span><span>Used</span><span>Other</span></div>
+              </div>
+              <div className="arrival-mix-list">
+                {view.arrivalMix.map((row) => (
+                  <div className="arrival-mix-row" key={row.name}>
+                    <div><span>{powertrainLabel[row.name]}</span><small>{percent(row.nzNew / row.total)} new · {percent(row.used / row.total)} used</small><b>{number.format(row.total)}</b></div>
+                    <div className="arrival-track" role="img" aria-label={`${powertrainLabel[row.name]}: ${number.format(row.nzNew)} NZ-new, ${number.format(row.used)} used imports and ${number.format(row.other)} other or unknown`}>
+                      <i className="arrival-new" style={{ width: `${(row.nzNew / row.total) * 100}%` }} />
+                      <i className="arrival-used" style={{ width: `${(row.used / row.total) * 100}%` }} />
+                      <i className="arrival-other" style={{ width: `${(row.other / row.total) * 100}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
             <article className="panel ranking-panel">
-              <span className="panel-kicker">TOP MODELS · {prettyMonth(view.latest).toUpperCase()}</span>
+              <span className="panel-kicker">TOP MODELS · {view.vehicleLabel}</span>
               <ol>
                 {view.topModels.map((row) => (
                   <li key={`${row.make}-${row.model}`}><span className="rank">{String(row.rank).padStart(2, "0")}</span><div><strong>{row.model}</strong><small>{row.make}</small></div><b>{number.format(row.registration_count)}</b></li>
@@ -405,7 +477,7 @@ export default function Home() {
             </div>
 
             <article className="explorer-result" aria-live="polite">
-              <span className="panel-kicker">CURRENT SNAPSHOT · 2007+ SCOPE</span>
+              <span className="panel-kicker">CURRENT FLEET SNAPSHOT · 2007+ SCOPE</span>
               <div className="explorer-title">
                 <div><h3>{explorer.model || explorer.makeRecord?.brand || explorer.make}</h3><p>{explorer.model ? explorer.makeRecord?.brand : explorer.makeRecord?.brand_country}</p></div>
                 <strong>{number.format(explorer.total)}<small>vehicles represented</small></strong>
@@ -439,7 +511,9 @@ export default function Home() {
 
       <footer className="footer wrap">
         <span>NZ Vehicle Market Tracker</span>
-        <p>Source: NZ Transport Agency vehicle fleet open data · Current-fleet snapshot</p>
+        <p>
+          Source: <a href="https://www.nzta.govt.nz/resources/new-zealand-motor-vehicle-register-statistics/new-zealand-vehicle-fleet-open-data-sets" target="_blank" rel="noreferrer">NZTA vehicle fleet open data ↗</a> · Current-fleet snapshot
+        </p>
       </footer>
     </main>
   );

@@ -64,3 +64,4 @@ def test_refresh_workflow_uses_the_direct_official_zip_url() -> None:
     assert "wksprdgisopendata.blob.core.windows.net" in workflow
     assert '--url "$NZTA_ALL_YEARS_ZIP_URL"' in workflow
     assert "vars.NZTA_ALL_YEARS_ZIP_URL" in workflow
+    assert 'cron: "17 4 * * 1"' in workflow
