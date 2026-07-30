@@ -1,114 +1,73 @@
 # NZ Vehicle Market Tracker
 
-This repository contains the completed data-feasibility work, the production
-aggregation pipeline, and a responsive dashboard for a portfolio-quality
-analysis of New Zealand's registered vehicle fleet. The product is static: it
-does not require a backend, user accounts, or a database.
+[![Deploy GitHub Pages](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/deploy-pages.yml)
+[![Refresh NZTA aggregates](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/refresh-data.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/refresh-data.yml)
 
-The analysis uses NZTA's all-vehicle-years fleet release and describes vehicles
-as being **first registered in New Zealand** or **entering the NZ fleet**. It
-does not interpret registrations as retail purchases. `PREVIOUS_COUNTRY` is a
-previous registration/import country, not a manufacturing country.
+An interactive data product exploring how New Zealand's passenger-vehicle fleet
+is changing. It turns NZTA's multi-gigabyte current-fleet release into a small,
+versioned set of aggregates and a responsive static dashboard.
 
-Source: NZ Transport Agency Waka Kotahi, New Zealand Vehicle Fleet Open Data,
-licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+**[View the live dashboard](https://michaelocez.github.io/nz-vehicle-market-tracker/)**
 
-## Privacy and raw data
+## What the dashboard shows
 
-Raw NZTA files are processed directly from a ZIP outside the repository. The
-pipeline selects only analytical columns and never retains identifiers such as
-`VIN11`, `CHASSIS7`, `ENGINE_NUMBER`, or `POSTCODE`. Raw ZIPs, extracted fleet
-CSVs, caches, and temporary data directories are ignored by Git.
+- NZ-new vehicles versus used imports entering the fleet over time.
+- The leading makes and models in the latest month and current scoped fleet.
+- Combustion, hybrid, battery-electric and plug-in-hybrid composition.
+- NZ-new versus used-import arrival channels within each major powertrain.
+- Previous registration countries for used imports.
+- Approximate import-age patterns for the comparable 2007+ cohort.
+- Current fleet totals for a selected make or model.
 
-## Run the feasibility analysis
+The dashboard describes vehicles as **first registered in New Zealand** or
+**entering the NZ fleet**. Registrations are not treated as retail purchases,
+and `PREVIOUS_COUNTRY` means a previous registration/import country rather than
+the country where a vehicle was manufactured.
 
-Create an environment and install the development tools:
+## How it works
 
-```powershell
-python -m venv .venv
-.venv\Scripts\python -m pip install -e ".[dev]"
+```mermaid
+flowchart LR
+    A["NZTA all-vehicle-years ZIP"] --> B["Streaming Python pipeline"]
+    B --> C["Validated aggregate JSON"]
+    C --> D["React and TypeScript dashboard"]
+    D --> E["GitHub Pages"]
+    F["Weekly GitHub Actions check"] --> A
 ```
 
-Run against a local all-years ZIP without extracting it:
+The website is entirely static. It requires no backend, user accounts or
+database, and the raw vehicle-level dataset is never deployed.
 
-```powershell
-.venv\Scripts\python -m nz_vehicle_market_tracker.feasibility `
-  "<path-to>\Fleet-data-all-vehicle-years.zip"
-```
+## Technology
 
-The command writes a Markdown report and small aggregate outputs under
-`reports/` and `data/processed/`. Override those locations with `--report` and
-`--output-dir`. Use `--recent-months` to change the default six-month recency
-window.
-
-For a future refresh, the downloader can discover the current all-years link
-from NZTA's fleet-data page or accept an explicit ZIP URL. Downloads go to the
-ignored `data/cache/` directory:
-
-```powershell
-.venv\Scripts\python -m nz_vehicle_market_tracker.downloader
-```
-
-## Build production aggregates
-
-The production build applies the approved scope and writes checksummed JSON
-dimensions under `data/production/current/`, including complete make/model
-snapshot totals for the dashboard explorer:
-
-```powershell
-.venv\Scripts\python -m nz_vehicle_market_tracker.production `
-  "<path-to>\Fleet-data-all-vehicle-years.zip"
-```
-
-The schema and inclusion rules are documented in
-[`docs/data-contract.md`](docs/data-contract.md). Brand country comes from the
-reviewable [`data/reference/brand_countries.csv`](data/reference/brand_countries.csv)
-lookup and means the recognised origin of the marque, not the manufacturing
-country of an individual vehicle.
-
-Run tests with:
-
-```powershell
-.venv\Scripts\python -m pytest
-```
+- **Data pipeline:** Python 3, streaming CSV/ZIP processing and checksummed JSON.
+- **Frontend:** React 19, TypeScript and Vite.
+- **Quality:** pytest, Ruff, TypeScript checks and Node test assertions.
+- **Automation:** GitHub Actions and GitHub Pages.
+- **Data source:** NZTA New Zealand Vehicle Fleet Open Data.
 
 ## Automated data refresh
 
-The `Refresh NZTA aggregates` GitHub Actions workflow checks for a new NZTA
-release every Monday and can also be started manually from the repository's
-**Actions** tab.
-It downloads the current all-vehicle-years ZIP into temporary runner storage,
-runs the Python and frontend tests, and commits only changed aggregate JSON.
-The raw ZIP and fleet CSV are discarded with the runner and never enter Git.
-The workflow uses NZTA's official direct blob URL because the public webpage
-rejects GitHub-hosted automated requests. If NZTA changes that URL, set a
-repository Actions variable named `NZTA_ALL_YEARS_ZIP_URL` to the replacement.
+The `Refresh NZTA aggregates` workflow checks every Monday for a changed NZTA
+all-vehicle-years release. It downloads the ZIP into temporary runner storage,
+runs the Python and frontend tests, rebuilds the aggregates, and commits only
+changed aggregate JSON. The raw ZIP and fleet CSV are discarded with the
+runner, so no monthly maintenance or personal access token is required.
 
-Each changed NZTA snapshot updates `data/production/current/` and is retained
-under `data/production/archive/YYYY-MM/`. Dataset checksums prevent a new commit
-when NZTA has not changed the published snapshot. The workflow requires
-`contents: write` permission for its repository-scoped `GITHUB_TOKEN`; no
-personal token or monthly manual download is required.
+Each changed snapshot updates `data/production/current/` and is retained under
+`data/production/archive/YYYY-MM/`. Dataset checksums prevent unnecessary
+commits when NZTA has not changed its release. If NZTA replaces the official
+direct download URL, the workflow can use a repository Actions variable named
+`NZTA_ALL_YEARS_ZIP_URL`.
 
-## Deployment
+The Pages workflow tests and builds `web/dist` whenever `main` changes. A
+successful data refresh calls the same deployment workflow, publishing the new
+aggregates without manual intervention.
 
-The dashboard is published through GitHub Pages at:
+## Run the dashboard locally
 
-https://michaelocez.github.io/nz-vehicle-market-tracker/
-
-The Pages workflow tests and builds `web/dist` whenever `main` changes. The
-monthly data-refresh workflow calls the same deployment after processing, so a
-new NZTA snapshot is published without manual intervention. The repository may
-remain private under an eligible GitHub plan while the Pages website is public.
-
-## Run the dashboard
-
-The frontend lives under `web/`. It reads only the production aggregates, not
-the raw NZTA file. Its development and build commands automatically sync the
-required JSON into an ignored local public-data directory:
-
-The vehicle rankings can switch between the latest entry month and totals
-represented across the current 2007+ scoped fleet snapshot.
+The frontend reads only the production aggregates. Its development and build
+commands copy the required JSON into an ignored local public-data directory:
 
 ```powershell
 cd web
@@ -122,18 +81,79 @@ Open `http://localhost:3000`. Run the frontend checks and production build with:
 npm test
 ```
 
-## Approved analytical boundaries
+## Run the data pipeline
 
-- The download boundary is the complete current-fleet snapshot.
+Create a Python environment and install the project with its development tools:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -e ".[dev]"
+```
+
+Build the production aggregates from a local all-years ZIP without permanently
+extracting it:
+
+```powershell
+.venv\Scripts\python -m nz_vehicle_market_tracker.production `
+  "<path-to>\Fleet-data-all-vehicle-years.zip"
+```
+
+The downloader can discover the current all-years release or accept an explicit
+ZIP URL. Downloads go to the ignored `data/cache/` directory:
+
+```powershell
+.venv\Scripts\python -m nz_vehicle_market_tracker.downloader
+```
+
+Run the Python test suite with:
+
+```powershell
+.venv\Scripts\python -m pytest
+```
+
+The original feasibility investigation can also be reproduced:
+
+```powershell
+.venv\Scripts\python -m nz_vehicle_market_tracker.feasibility `
+  "<path-to>\Fleet-data-all-vehicle-years.zip"
+```
+
+It writes a Markdown report and small evidence outputs under `reports/` and
+`data/processed/`. Use `--report`, `--output-dir` or `--recent-months` to
+override the defaults.
+
+## Data definitions and scope
+
+- The download boundary is NZTA's complete current-fleet snapshot.
 - Production trends begin at first NZ registration month `2007-01`.
-- Import-age comparisons use vehicle years from 2007 onward.
-- Older rows remain in overall counts and are flagged as legacy/non-comparable
-  for age analysis.
 - Production rows are restricted to `VEHICLE_TYPE = PASSENGER CAR/VAN` and
   `CLASS IN (MA, MB, MC)`.
-- Historical registration cohorts reconstructed from a current snapshot have
-  survivorship bias. Reliable monthly history begins when aggregate snapshots
-  are archived by this project.
+- Import-age comparisons use vehicle years from 2007 onward. Older rows remain
+  available for overall counts but are legacy/non-comparable for age analysis.
+- Brand country is a curated marque-level attribute, not the manufacturing
+  country of an individual vehicle.
+- Historical cohorts reconstructed from a current-fleet snapshot have
+  survivorship bias. Reliable ongoing history begins with archived project
+  snapshots.
 
 Motorcycles, goods vehicles, buses, trailers, caravans, ATVs, tractors and
 special-purpose machinery are outside the product scope.
+
+The complete schema and inclusion rules are documented in the
+[data contract](docs/data-contract.md). The reviewable
+[brand-country mapping](data/reference/brand_countries.csv) records the
+recognised origin of each marque.
+
+## Privacy and raw data
+
+Raw NZTA files are processed directly from a ZIP outside the repository. The
+pipeline selects only analytical columns and never retains identifiers such as
+`VIN11`, `CHASSIS7`, `ENGINE_NUMBER` or `POSTCODE`. Raw ZIPs, extracted fleet
+CSVs, caches and temporary data directories are ignored by Git.
+
+## Data source and licence
+
+Source: [NZ Transport Agency Waka Kotahi — New Zealand Vehicle Fleet Open Data](https://www.nzta.govt.nz/resources/new-zealand-motor-vehicle-register-statistics/new-zealand-vehicle-fleet-open-data-sets/).
+
+NZTA's source data is licensed under
+[Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/).
