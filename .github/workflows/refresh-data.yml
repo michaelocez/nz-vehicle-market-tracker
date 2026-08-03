@@ -125,7 +125,7 @@ jobs:
           npm ci
           npm test
 
-      - name: Commit changed aggregate JSON
+      - name: Commit changed release metadata and aggregate JSON
         if: steps.probe.outputs.changed == 'true'
         shell: bash
         run: |
@@ -137,7 +137,7 @@ jobs:
           snapshot_month="$(python -c 'import json; print(json.load(open("data/production/current/manifest.json"))["source"]["snapshot_month"])')"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/production/current data/production/archive
+          git add data/production/source-release.json data/production/current data/production/archive
           git commit -m "data: refresh NZTA aggregates for $snapshot_month"
           git push origin "HEAD:${{ github.event.repository.default_branch }}"
 
