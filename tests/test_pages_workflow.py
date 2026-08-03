@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 
@@ -7,9 +8,11 @@ def test_pages_workflow_builds_and_deploys_static_dashboard() -> None:
     assert "workflow_call:" in workflow
     assert "npm ci" in workflow
     assert "npm test" in workflow
-    assert "actions/configure-pages@v6" in workflow
-    assert "actions/upload-pages-artifact@v5" in workflow
-    assert "actions/deploy-pages@v5" in workflow
+    assert re.search(r"actions/configure-pages@[0-9a-fA-F]{40}\s+#\s*v6\b", workflow)
+    assert re.search(
+        r"actions/upload-pages-artifact@[0-9a-fA-F]{40}\s+#\s*v5\b", workflow
+    )
+    assert re.search(r"actions/deploy-pages@[0-9a-fA-F]{40}\s+#\s*v5\b", workflow)
     assert "path: web/dist" in workflow
 
 
