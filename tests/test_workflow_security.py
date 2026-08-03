@@ -9,7 +9,7 @@ WRITE_CAPABLE_WORKFLOWS = (
     ".github/workflows/deploy-pages.yml",
 )
 EXTERNAL_ACTION = re.compile(r"^\s*uses:\s*[^./][^@\s]*@(?P<revision>[^\s#]+)")
-IMMUTABLE_COMMIT_SHA = re.compile(r"^[0-9a-f]{40}$")
+IMMUTABLE_COMMIT_SHA = re.compile(r"^[0-9a-fA-F]{40}$")
 
 
 @pytest.mark.parametrize("workflow_path", WRITE_CAPABLE_WORKFLOWS)
