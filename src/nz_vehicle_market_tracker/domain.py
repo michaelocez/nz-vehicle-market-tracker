@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
 MISSING_VALUES = {"", "NONE", "NOT KNOWN", "UNKNOWN", "N/A", "NULL"}
 COMBUSTION_TERMS = ("PETROL", "DIESEL", "LPG", "CNG", "GAS", "ETHANOL")
 ORDINARY_LIGHT_PASSENGER_CLASSES = frozenset({"MA", "MB", "MC"})

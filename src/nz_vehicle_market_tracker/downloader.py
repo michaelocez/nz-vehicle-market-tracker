@@ -10,7 +10,6 @@ from pathlib import Path
 from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 
-
 DEFAULT_SOURCE_PAGE = "https://www.nzta.govt.nz/resources/new-zealand-motor-vehicle-register-statistics/new-zealand-vehicle-fleet-open-data-sets"
 USER_AGENT = "nz-vehicle-market-tracker/0.1 (+portfolio data pipeline)"
 
@@ -57,7 +56,7 @@ def discover_all_years_zip(page_url: str, html: str) -> str:
 
 def fetch_text(url: str) -> str:
     request = Request(url, headers={"User-Agent": USER_AGENT})
-    with urlopen(request, timeout=60) as response:  # noqa: S310 - expected HTTPS source
+    with urlopen(request, timeout=60) as response:
         charset = response.headers.get_content_charset() or "utf-8"
         return response.read().decode(charset, errors="replace")
 
@@ -75,7 +74,7 @@ def download(url: str, destination_dir: Path) -> Path:
     temporary = destination.with_suffix(destination.suffix + ".part")
     request = Request(url, headers={"User-Agent": USER_AGENT})
     try:
-        with urlopen(request, timeout=120) as response, temporary.open("wb") as handle:  # noqa: S310
+        with urlopen(request, timeout=120) as response, temporary.open("wb") as handle:
             shutil.copyfileobj(response, handle, length=1024 * 1024)
         temporary.replace(destination)
     finally:

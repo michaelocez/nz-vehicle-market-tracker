@@ -10,7 +10,6 @@ import shutil
 import sys
 from pathlib import Path
 
-
 SNAPSHOT_MONTH_PATTERN = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 
 
@@ -21,7 +20,8 @@ def load_manifest(directory: Path) -> dict[str, object]:
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"Could not read aggregate manifest: {path}") from exc
     if not isinstance(manifest, dict):
-        raise ValueError(f"Aggregate manifest must be a JSON object: {path}")
+        # A decoded JSON document with the wrong shape is malformed input, not an API type error.
+        raise ValueError(f"Aggregate manifest must be a JSON object: {path}")  # noqa: TRY004
     return manifest
 
 
@@ -50,7 +50,8 @@ def data_signature(manifest: dict[str, object]) -> tuple[str, tuple[tuple[str, s
 def validate_dataset_files(directory: Path, manifest: dict[str, object]) -> None:
     files = manifest.get("files")
     if not isinstance(files, dict):
-        raise ValueError("Aggregate manifest has no dataset files")
+        # Preserve ValueError as the consistent contract for invalid manifest contents.
+        raise ValueError("Aggregate manifest has no dataset files")  # noqa: TRY004
     for metadata in files.values():
         path_value = metadata.get("path") if isinstance(metadata, dict) else None
         digest = metadata.get("sha256") if isinstance(metadata, dict) else None

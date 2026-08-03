@@ -7,9 +7,9 @@ import csv
 import json
 import sys
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from collections.abc import Iterable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable
 
 from .domain import (
     calculate_import_age,
@@ -22,7 +22,11 @@ from .domain import (
 )
 from .source import (
     ANALYTICAL_COLUMNS as REQUIRED_COLUMNS,
+)
+from .source import (
     SENSITIVE_COLUMNS,
+)
+from .source import (
     open_fleet_csv as inspect_source,
 )
 
@@ -177,7 +181,7 @@ def analyse(zip_path: Path, *, recent_months: int = 6) -> dict[str, object]:
         return sum(found) / len(found)
 
     result: dict[str, object] = {
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
         "source": {
             "file": metadata.zip_path.name,
             "member": metadata.member_name,
@@ -190,7 +194,7 @@ def analyse(zip_path: Path, *, recent_months: int = 6) -> dict[str, object]:
                 SENSITIVE_COLUMNS.intersection(metadata.source_columns)
             ),
             "inferred_selected_types": {
-                name: "integer" if name.endswith("YEAR") or name.endswith("MONTH") else "string"
+                name: "integer" if name.endswith(("YEAR", "MONTH")) else "string"
                 for name in REQUIRED_COLUMNS
             },
         },

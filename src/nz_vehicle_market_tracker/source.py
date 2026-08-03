@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO
 
-
 ANALYTICAL_COLUMNS = (
     "VEHICLE_YEAR",
     "FIRST_NZ_REGISTRATION_YEAR",
