@@ -11,8 +11,12 @@ const files = [
   "monthly_powertrain.json",
   "monthly_make.json",
   "monthly_model.json",
+  "monthly_make_powertrain.json",
+  "monthly_model_powertrain.json",
   "scope_make.json",
   "scope_model.json",
+  "scope_make_powertrain.json",
+  "scope_model_powertrain.json",
   "monthly_previous_country.json",
   "monthly_import_age.json",
 ];

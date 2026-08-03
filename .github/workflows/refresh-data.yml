@@ -2,9 +2,15 @@ name: Refresh NZTA aggregates
 
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: Download and rebuild even when the release metadata is unchanged
+        required: false
+        default: false
+        type: boolean
   schedule:
-    # Check every Monday afternoon in New Zealand; unchanged ZIPs produce no data commit.
-    - cron: "17 4 * * 1"
+    # 05:17 UTC daily (late afternoon/evening in NZ); unchanged files stop after a HEAD request.
+    - cron: "17 5 * * *"
 
 permissions:
   contents: write
@@ -18,8 +24,11 @@ jobs:
     name: Download, validate, and publish aggregates
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    outputs:
+      release_changed: ${{ steps.probe.outputs.changed }}
     env:
       NZTA_ALL_YEARS_ZIP_URL: ${{ vars.NZTA_ALL_YEARS_ZIP_URL || 'https://wksprdgisopendata.blob.core.windows.net/motorvehicleregister/Fleet-data-all-vehicle-years.zip' }}
+      FORCE_REFRESH: ${{ inputs.force || 'false' }}
 
     steps:
       - name: Check out the default branch
@@ -27,7 +36,44 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
 
+      - name: Check official release metadata
+        id: probe
+        shell: bash
+        run: |
+          headers="$RUNNER_TEMP/nzta-release-headers.txt"
+          metadata="$RUNNER_TEMP/nzta-source-release.json"
+          curl --fail --silent --show-error --head "$NZTA_ALL_YEARS_ZIP_URL" > "$headers"
+
+          etag="$(sed -n 's/^[Ee][Tt][Aa][Gg]:[[:space:]]*//p' "$headers" | tr -d '\r' | head -n 1)"
+          last_modified="$(sed -n 's/^[Ll]ast-[Mm]odified:[[:space:]]*//p' "$headers" | tr -d '\r' | head -n 1)"
+          content_length="$(sed -n 's/^[Cc]ontent-[Ll]ength:[[:space:]]*//p' "$headers" | tr -d '\r' | head -n 1)"
+
+          if [[ -z "$etag" || -z "$last_modified" || ! "$content_length" =~ ^[0-9]+$ ]]; then
+            echo "Official ZIP response did not include usable release metadata." >&2
+            exit 1
+          fi
+
+          jq -n \
+            --arg url "$NZTA_ALL_YEARS_ZIP_URL" \
+            --arg etag "$etag" \
+            --arg last_modified "$last_modified" \
+            --argjson content_length "$content_length" \
+            '{url: $url, etag: $etag, last_modified: $last_modified, content_length: $content_length}' \
+            > "$metadata"
+
+          changed=true
+          if [[ "$FORCE_REFRESH" != "true" ]] && \
+             [[ -f data/production/source-release.json ]] && \
+             cmp --silent "$metadata" data/production/source-release.json; then
+            changed=false
+            echo "NZTA release metadata is unchanged; skipping download and rebuild."
+          fi
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          echo "metadata=$metadata" >> "$GITHUB_OUTPUT"
+
       - name: Set up Python
+        if: steps.probe.outputs.changed == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -35,12 +81,15 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install the data pipeline
+        if: steps.probe.outputs.changed == 'true'
         run: python -m pip install -e ".[dev]"
 
       - name: Test the data pipeline
+        if: steps.probe.outputs.changed == 'true'
         run: python -m pytest
 
       - name: Download the current all-vehicle-years release
+        if: steps.probe.outputs.changed == 'true'
         id: download
         shell: bash
         run: |
@@ -50,13 +99,19 @@ jobs:
           echo "zip_path=$zip_path" >> "$GITHUB_OUTPUT"
 
       - name: Build and promote changed aggregates
+        if: steps.probe.outputs.changed == 'true'
         run: |
           python -m nz_vehicle_market_tracker.production \
             "${{ steps.download.outputs.zip_path }}" \
             --output-dir "$RUNNER_TEMP/aggregates"
           python -m nz_vehicle_market_tracker.refresh "$RUNNER_TEMP/aggregates"
 
+      - name: Record source release metadata
+        if: steps.probe.outputs.changed == 'true'
+        run: cp "${{ steps.probe.outputs.metadata }}" data/production/source-release.json
+
       - name: Set up Node.js
+        if: steps.probe.outputs.changed == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: "22"
@@ -64,12 +119,14 @@ jobs:
           cache-dependency-path: web/package-lock.json
 
       - name: Test the dashboard against refreshed data
+        if: steps.probe.outputs.changed == 'true'
         working-directory: web
         run: |
           npm ci
           npm test
 
       - name: Commit changed aggregate JSON
+        if: steps.probe.outputs.changed == 'true'
         shell: bash
         run: |
           if [[ -z "$(git status --porcelain -- data/production)" ]]; then
@@ -87,6 +144,7 @@ jobs:
   deploy:
     name: Deploy refreshed dashboard
     needs: refresh
+    if: needs.refresh.outputs.release_changed == 'true'
     uses: ./.github/workflows/deploy-pages.yml
     permissions:
       contents: read

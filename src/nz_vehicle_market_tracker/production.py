@@ -26,11 +26,12 @@ from .domain import (
 from .source import ANALYTICAL_COLUMNS, open_fleet_csv
 
 
-DATA_CONTRACT_VERSION = "1.1.0"
+DATA_CONTRACT_VERSION = "1.2.0"
 DEFAULT_START_MONTH = "2007-01"
 DEFAULT_BRAND_REFERENCE = Path("data/reference/brand_countries.csv")
 DEFAULT_OUTPUT_DIR = Path("data/production/current")
 LEADERBOARD_LIMIT = 25
+LEADERBOARD_POWERTRAIN_GROUPS = ("combustion", "hybrid", "bev", "phev", "other")
 
 
 @dataclass(frozen=True)
@@ -110,6 +111,7 @@ def _ranked_records(
     *,
     group_fields: int,
     limit: int = LEADERBOARD_LIMIT,
+    count_field: str = "registration_count",
 ) -> list[dict[str, object]]:
     grouped: dict[tuple, list[tuple[tuple, int]]] = {}
     for values, count in counter.items():
@@ -124,9 +126,15 @@ def _ranked_records(
         for rank, (values, count) in enumerate(ranked, start=1):
             row = dict(zip(fields, values, strict=True))
             row["rank"] = rank
-            row["registration_count"] = count
+            row[count_field] = count
             rows.append(row)
     return rows
+
+
+def leaderboard_powertrain_group(motive: str) -> str:
+    """Collapse very small motive groups into one stable leaderboard option."""
+
+    return motive if motive in LEADERBOARD_POWERTRAIN_GROUPS[:-1] else "other"
 
 
 def aggregate(
@@ -146,8 +154,12 @@ def aggregate(
     monthly_powertrain: Counter[tuple[str, str, str]] = Counter()
     monthly_make: Counter[tuple[str, str, str, str, str]] = Counter()
     monthly_model: Counter[tuple[str, str, str, str]] = Counter()
+    monthly_make_powertrain: Counter[tuple[str, str, str, str, str]] = Counter()
+    monthly_model_powertrain: Counter[tuple[str, str, str, str]] = Counter()
     scope_make: Counter[tuple[str, str, str, str]] = Counter()
     scope_model: Counter[tuple[str, str, str]] = Counter()
+    scope_make_powertrain: Counter[tuple[str, str, str, str]] = Counter()
+    scope_model_powertrain: Counter[tuple[str, str, str]] = Counter()
     monthly_brand_country: Counter[tuple[str, str, str]] = Counter()
     monthly_previous_country: Counter[tuple[str, str]] = Counter()
     monthly_vehicle_year: Counter[tuple[str, str, int, bool]] = Counter()
@@ -181,6 +193,7 @@ def aggregate(
             quality["included_rows"] += 1
             status = import_status_group(value["IMPORT_STATUS"])
             motive = powertrain_group(value["MOTIVE_POWER"], value["ALTERNATIVE_MOTIVE_POWER"])
+            leaderboard_motive = leaderboard_powertrain_group(motive)
             make = normalise(value["MAKE"]) or "UNKNOWN"
             model = normalise(value["MODEL"]) or "UNKNOWN"
             brand_info = brand_reference.lookup(make)
@@ -200,10 +213,14 @@ def aggregate(
             monthly_make[(month, "all", make, brand, brand_country)] += 1
             monthly_model[(month, status, make, model)] += 1
             monthly_model[(month, "all", make, model)] += 1
+            monthly_make_powertrain[(month, leaderboard_motive, make, brand, brand_country)] += 1
+            monthly_model_powertrain[(month, leaderboard_motive, make, model)] += 1
             scope_make[(status, make, brand, brand_country)] += 1
             scope_make[("all", make, brand, brand_country)] += 1
             scope_model[(status, make, model)] += 1
             scope_model[("all", make, model)] += 1
+            scope_make_powertrain[(leaderboard_motive, make, brand, brand_country)] += 1
+            scope_model_powertrain[(leaderboard_motive, make, model)] += 1
             monthly_brand_country[(month, status, brand_country)] += 1
 
             if status == "used_import":
@@ -267,6 +284,7 @@ def aggregate(
                 "import_age_vehicle_year_from": config.comparable_vehicle_year,
                 "legacy_vehicle_years_in_counts": True,
                 "leaderboard_limit_per_month_and_status": LEADERBOARD_LIMIT,
+                "leaderboard_powertrain_groups": list(LEADERBOARD_POWERTRAIN_GROUPS),
             },
         },
         "source": {
@@ -303,6 +321,27 @@ def aggregate(
                 ("registration_month", "import_status_group", "make", "model"),
                 group_fields=2,
             ),
+            "monthly_make_powertrain": _ranked_records(
+                monthly_make_powertrain,
+                (
+                    "registration_month",
+                    "powertrain_group",
+                    "make",
+                    "brand",
+                    "brand_country",
+                ),
+                group_fields=2,
+            ),
+            "monthly_model_powertrain": _ranked_records(
+                monthly_model_powertrain,
+                (
+                    "registration_month",
+                    "powertrain_group",
+                    "make",
+                    "model",
+                ),
+                group_fields=2,
+            ),
             "scope_make": _records(
                 scope_make,
                 ("import_status_group", "make", "brand", "brand_country"),
@@ -311,6 +350,23 @@ def aggregate(
             "scope_model": _records(
                 scope_model,
                 ("import_status_group", "make", "model"),
+                count_field="vehicle_count",
+            ),
+            "scope_make_powertrain": _ranked_records(
+                scope_make_powertrain,
+                (
+                    "powertrain_group",
+                    "make",
+                    "brand",
+                    "brand_country",
+                ),
+                group_fields=1,
+                count_field="vehicle_count",
+            ),
+            "scope_model_powertrain": _ranked_records(
+                scope_model_powertrain,
+                ("powertrain_group", "make", "model"),
+                group_fields=1,
                 count_field="vehicle_count",
             ),
             "monthly_brand_country": _records(

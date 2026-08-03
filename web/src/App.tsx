@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 type Range = "5y" | "10y" | "all";
 type VehicleView = "latest" | "snapshot";
+type LeaderboardPowertrain = "all" | "combustion" | "hybrid" | "bev" | "phev" | "other";
 type CountRecord = { registration_month: string; registration_count: number };
 type SummaryRecord = CountRecord & { import_status_group: string };
 type PowertrainRecord = SummaryRecord & { powertrain_group: string };
@@ -9,6 +10,10 @@ type MakeRecord = SummaryRecord & { make: string; brand: string; brand_country: 
 type ModelRecord = SummaryRecord & { make: string; model: string; rank: number };
 type ScopeMakeRecord = { import_status_group: string; make: string; brand: string; brand_country: string; vehicle_count: number };
 type ScopeModelRecord = { import_status_group: string; make: string; model: string; vehicle_count: number };
+type MakePowertrainRecord = CountRecord & { powertrain_group: string; make: string; brand: string; brand_country: string; rank: number };
+type ModelPowertrainRecord = CountRecord & { powertrain_group: string; make: string; model: string; rank: number };
+type ScopeMakePowertrainRecord = { powertrain_group: string; make: string; brand: string; brand_country: string; vehicle_count: number; rank: number };
+type ScopeModelPowertrainRecord = { powertrain_group: string; make: string; model: string; vehicle_count: number; rank: number };
 type CountryRecord = CountRecord & { previous_country: string };
 type AgeRecord = CountRecord & { approximate_import_age: number };
 type DataFile<T> = { contract_version: string; snapshot_month: string; records: T[] };
@@ -23,8 +28,12 @@ type DashboardData = {
   powertrain: DataFile<PowertrainRecord>;
   makes: DataFile<MakeRecord>;
   models: DataFile<ModelRecord>;
+  makePowertrains: DataFile<MakePowertrainRecord>;
+  modelPowertrains: DataFile<ModelPowertrainRecord>;
   scopeMakes: DataFile<ScopeMakeRecord>;
   scopeModels: DataFile<ScopeModelRecord>;
+  scopeMakePowertrains: DataFile<ScopeMakePowertrainRecord>;
+  scopeModelPowertrains: DataFile<ScopeModelPowertrainRecord>;
   countries: DataFile<CountryRecord>;
   ages: DataFile<AgeRecord>;
 };
@@ -32,6 +41,7 @@ type DashboardData = {
 const number = new Intl.NumberFormat("en-NZ");
 const compact = new Intl.NumberFormat("en-NZ", { notation: "compact", maximumFractionDigits: 1 });
 const monthLabel = new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric", timeZone: "UTC" });
+const monthName = new Intl.DateTimeFormat("en-NZ", { month: "long", timeZone: "UTC" });
 
 const powertrainLabel: Record<string, string> = {
   bev: "Battery electric",
@@ -44,9 +54,22 @@ const powertrainLabel: Record<string, string> = {
 };
 
 const arrivalPowertrains = ["combustion", "hybrid", "bev", "phev"];
+const leaderboardPowertrains: LeaderboardPowertrain[] = ["all", "combustion", "hybrid", "bev", "phev", "other"];
+const leaderboardPowertrainLabel: Record<LeaderboardPowertrain, string> = {
+  all: "All",
+  combustion: "Combustion",
+  hybrid: "Hybrid",
+  bev: "BEV",
+  phev: "PHEV",
+  other: "Other",
+};
 
 function prettyMonth(value: string) {
   return monthLabel.format(new Date(`${value}-01T00:00:00Z`));
+}
+
+function prettyMonthName(value: string) {
+  return monthName.format(new Date(`${value}-01T00:00:00Z`));
 }
 
 function percent(value: number) {
@@ -100,6 +123,7 @@ export default function Home() {
   const [error, setError] = useState(false);
   const [range, setRange] = useState<Range>("10y");
   const [vehicleView, setVehicleView] = useState<VehicleView>("latest");
+  const [leaderboardPowertrain, setLeaderboardPowertrain] = useState<LeaderboardPowertrain>("all");
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
 
@@ -110,8 +134,12 @@ export default function Home() {
       "monthly_powertrain.json",
       "monthly_make.json",
       "monthly_model.json",
+      "monthly_make_powertrain.json",
+      "monthly_model_powertrain.json",
       "scope_make.json",
       "scope_model.json",
+      "scope_make_powertrain.json",
+      "scope_model_powertrain.json",
       "monthly_previous_country.json",
       "monthly_import_age.json",
     ];
@@ -119,8 +147,8 @@ export default function Home() {
       if (!response.ok) throw new Error(file);
       return response.json();
     })))
-      .then(([manifest, summary, powertrain, makes, models, scopeMakes, scopeModels, countries, ages]) => {
-        setData({ manifest, summary, powertrain, makes, models, scopeMakes, scopeModels, countries, ages });
+      .then(([manifest, summary, powertrain, makes, models, makePowertrains, modelPowertrains, scopeMakes, scopeModels, scopeMakePowertrains, scopeModelPowertrains, countries, ages]) => {
+        setData({ manifest, summary, powertrain, makes, models, makePowertrains, modelPowertrains, scopeMakes, scopeModels, scopeMakePowertrains, scopeModelPowertrains, countries, ages });
       })
       .catch(() => setError(true));
   }, []);
@@ -159,23 +187,37 @@ export default function Home() {
     });
     const powertrainMax = Math.max(...powertrains.map((row) => row.value));
     const topMakes = vehicleView === "latest"
-      ? data.makes.records
-        .filter((row) => row.registration_month === latest && row.import_status_group === "all")
+      ? (leaderboardPowertrain === "all" ? data.makes.records : data.makePowertrains.records)
+        .filter((row) => row.registration_month === latest
+          && (leaderboardPowertrain === "all"
+            ? (row as MakeRecord).import_status_group === "all"
+            : (row as MakePowertrainRecord).powertrain_group === leaderboardPowertrain))
         .sort((a, b) => a.rank - b.rank)
         .slice(0, 5)
-      : data.scopeMakes.records
-        .filter((row) => row.import_status_group === "all")
-        .sort((a, b) => b.vehicle_count - a.vehicle_count)
+      : (leaderboardPowertrain === "all" ? data.scopeMakes.records : data.scopeMakePowertrains.records)
+        .filter((row) => leaderboardPowertrain === "all"
+          ? (row as ScopeMakeRecord).import_status_group === "all"
+          : (row as ScopeMakePowertrainRecord).powertrain_group === leaderboardPowertrain)
+        .sort((a, b) => leaderboardPowertrain === "all"
+          ? b.vehicle_count - a.vehicle_count
+          : (a as ScopeMakePowertrainRecord).rank - (b as ScopeMakePowertrainRecord).rank)
         .slice(0, 5)
         .map((row, index) => ({ ...row, rank: index + 1, registration_count: row.vehicle_count }));
     const topModels = vehicleView === "latest"
-      ? data.models.records
-        .filter((row) => row.registration_month === latest && row.import_status_group === "all")
+      ? (leaderboardPowertrain === "all" ? data.models.records : data.modelPowertrains.records)
+        .filter((row) => row.registration_month === latest
+          && (leaderboardPowertrain === "all"
+            ? (row as ModelRecord).import_status_group === "all"
+            : (row as ModelPowertrainRecord).powertrain_group === leaderboardPowertrain))
         .sort((a, b) => a.rank - b.rank)
         .slice(0, 5)
-      : data.scopeModels.records
-        .filter((row) => row.import_status_group === "all")
-        .sort((a, b) => b.vehicle_count - a.vehicle_count)
+      : (leaderboardPowertrain === "all" ? data.scopeModels.records : data.scopeModelPowertrains.records)
+        .filter((row) => leaderboardPowertrain === "all"
+          ? (row as ScopeModelRecord).import_status_group === "all"
+          : (row as ScopeModelPowertrainRecord).powertrain_group === leaderboardPowertrain)
+        .sort((a, b) => leaderboardPowertrain === "all"
+          ? b.vehicle_count - a.vehicle_count
+          : (a as ScopeModelPowertrainRecord).rank - (b as ScopeModelPowertrainRecord).rank)
         .slice(0, 5)
         .map((row, index) => ({ ...row, rank: index + 1, registration_count: row.vehicle_count }));
     const topCountries = data.countries.records
@@ -204,12 +246,15 @@ export default function Home() {
     const vehicleLabel = vehicleView === "latest"
       ? prettyMonth(latest).toUpperCase()
       : "CURRENT FLEET SNAPSHOT · 2007+";
+    const rankingContext = leaderboardPowertrain === "all"
+      ? vehicleLabel
+      : `${leaderboardPowertrainLabel[leaderboardPowertrain].toUpperCase()} · ${vehicleLabel}`;
     return {
       latest, nzNew, used, latestTotal, annual, annualMax, powertrains, powertrainMax, arrivalMix,
       topMakes, topModels, topCountries, countryMax, ageBuckets, ageMax,
-      medianAge: weightedMedian(latestAges), electric, vehicleTotal, vehicleLabel,
+      medianAge: weightedMedian(latestAges), electric, vehicleTotal, vehicleLabel, rankingContext,
     };
-  }, [data, range, vehicleView]);
+  }, [data, range, vehicleView, leaderboardPowertrain]);
 
   const explorer = useMemo(() => {
     if (!data) return null;
@@ -319,7 +364,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <p className="chart-note">2026 is year-to-date through June. Hover a year for exact counts.</p>
+          <p className="chart-note">{view.latest.slice(0, 4)} is year-to-date through {prettyMonthName(view.latest)}. Hover a year for exact counts.</p>
         </div>
 
         <div className="insight-strip">
@@ -346,11 +391,29 @@ export default function Home() {
               ))}
             </div>
           </div>
-          <p className="section-lead">
+          <p className="section-lead vehicle-section-lead">
             {vehicleView === "latest"
               ? "The powertrains, makes and models shaping the latest month."
               : "The powertrains, makes and models represented across the current scoped fleet."}
           </p>
+          <div className="ranking-filter-row">
+            <span className="scope-note">PASSENGER VEHICLES ONLY · MA / MB / MC</span>
+            <div className="ranking-filter" aria-label="Leaderboard powertrain filter">
+              <span>Rankings</span>
+              <div className="range-control">
+                {leaderboardPowertrains.map((value) => (
+                  <button
+                    key={value}
+                    className={leaderboardPowertrain === value ? "active" : ""}
+                    aria-pressed={leaderboardPowertrain === value}
+                    onClick={() => setLeaderboardPowertrain(value)}
+                  >
+                    {leaderboardPowertrainLabel[value]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
 
           <div className="dashboard-grid">
             <article className="panel powertrain-panel">
@@ -366,7 +429,7 @@ export default function Home() {
             </article>
 
             <article className="panel ranking-panel">
-              <span className="panel-kicker">TOP MAKES · {view.vehicleLabel}</span>
+              <span className="panel-kicker">TOP MAKES · {view.rankingContext}</span>
               <ol>
                 {view.topMakes.map((row) => (
                   <li key={row.make}><span className="rank">{String(row.rank).padStart(2, "0")}</span><div><strong>{row.brand}</strong><small>{row.brand_country}</small></div><b>{number.format(row.registration_count)}</b></li>
@@ -394,7 +457,7 @@ export default function Home() {
             </article>
 
             <article className="panel ranking-panel">
-              <span className="panel-kicker">TOP MODELS · {view.vehicleLabel}</span>
+              <span className="panel-kicker">TOP MODELS · {view.rankingContext}</span>
               <ol>
                 {view.topModels.map((row) => (
                   <li key={`${row.make}-${row.model}`}><span className="rank">{String(row.rank).padStart(2, "0")}</span><div><strong>{row.model}</strong><small>{row.make}</small></div><b>{number.format(row.registration_count)}</b></li>

@@ -65,6 +65,12 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .range-control button.active { background: var(--surface-raised); color: var(--ink); }
 .vehicle-view-control { flex-shrink: 0; }
 .vehicle-view-control button { padding-inline: 17px; }
+.vehicle-section-lead { margin-bottom: 22px; }
+.ranking-filter-row { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin: 0 0 30px 38px; }
+.scope-note { color: var(--primary-hover); font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.ranking-filter { display: flex; align-items: center; gap: 12px; }
+.ranking-filter > span { color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.ranking-filter .range-control button { padding-inline: 12px; }
 .chart-card, .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
 .market-card { padding: 34px 36px 24px; }
 .chart-key { display: flex; justify-content: flex-end; gap: 22px; font-size: 12px; color: var(--ink-soft); }
@@ -205,6 +211,10 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
   .vehicle-view-control { max-width: 100%; }
   .vehicle-view-control button { padding-inline: 13px; }
   .section-lead { margin-left: 0; }
+  .ranking-filter-row { align-items: start; flex-direction: column; margin-left: 0; }
+  .ranking-filter { align-items: start; flex-direction: column; width: 100%; }
+  .ranking-filter .range-control { max-width: 100%; overflow-x: auto; }
+  .ranking-filter .range-control button { flex: 0 0 auto; }
   .market-card, .panel { padding: 24px 20px; }
   .arrival-mix-heading { align-items: start; flex-direction: column; gap: 12px; }
   .arrival-mix-row > div:first-child { grid-template-columns: 100px 1fr auto; gap: 8px; }

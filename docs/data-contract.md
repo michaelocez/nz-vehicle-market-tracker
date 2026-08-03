@@ -1,6 +1,6 @@
 # Production data contract
 
-Contract version: `1.1.0`
+Contract version: `1.2.0`
 
 ## Inclusion rules
 
@@ -32,8 +32,12 @@ Every file contains `contract_version`, `snapshot_month`, and `records`.
 | `monthly_powertrain.json` | month x import status x powertrain group |
 | `monthly_make.json` | month x import status x leading make/brand/country |
 | `monthly_model.json` | month x import status x leading make/model |
+| `monthly_make_powertrain.json` | month x powertrain x leading make/brand/country |
+| `monthly_model_powertrain.json` | month x powertrain x leading make/model |
 | `scope_make.json` | import status x make/brand/country across the full 2007+ scope |
 | `scope_model.json` | import status x make/model across the full 2007+ scope |
+| `scope_make_powertrain.json` | powertrain x leading make/brand/country across the 2007+ scope |
+| `scope_model_powertrain.json` | powertrain x leading make/model across the 2007+ scope |
 | `monthly_brand_country.json` | month x import status x marque-origin country |
 | `monthly_previous_country.json` | month x previous country, used imports only |
 | `monthly_vehicle_year.json` | month x import status x vehicle year x comparability |
@@ -69,6 +73,10 @@ categories and are not consolidated into editorial model families.
 - `range_extended_electric`
 - `hydrogen_fuel_cell`
 - `other_or_unknown`
+
+Leaderboard filters retain `combustion`, `hybrid`, `bev` and `phev`; the much
+smaller `range_extended_ev`, `hydrogen` and `other_or_unknown` groups are
+combined as `other` for make/model ranking comparisons.
 
 PHEV is assigned only when the source explicitly identifies plug-in capability.
 Hydrogen fuel-cell and range-extended categories remain separate rather than

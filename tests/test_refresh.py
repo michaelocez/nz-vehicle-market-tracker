@@ -8,9 +8,7 @@ from nz_vehicle_market_tracker.refresh import promote_candidate
 def _write_snapshot(directory: Path, month: str, digest: str, generated_at: str) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     dataset = directory / "monthly_summary.json"
-    dataset.write_text(
-        json.dumps({"snapshot_month": month, "records": []}), encoding="utf-8"
-    )
+    dataset.write_text(json.dumps({"snapshot_month": month, "records": []}), encoding="utf-8")
     checksum = hashlib.sha256(dataset.read_bytes()).hexdigest()
     (directory / "manifest.json").write_text(
         json.dumps(
@@ -64,4 +62,8 @@ def test_refresh_workflow_uses_the_direct_official_zip_url() -> None:
     assert "wksprdgisopendata.blob.core.windows.net" in workflow
     assert '--url "$NZTA_ALL_YEARS_ZIP_URL"' in workflow
     assert "vars.NZTA_ALL_YEARS_ZIP_URL" in workflow
-    assert 'cron: "17 4 * * 1"' in workflow
+    assert 'cron: "17 5 * * *"' in workflow
+    assert 'curl --fail --silent --show-error --head "$NZTA_ALL_YEARS_ZIP_URL"' in workflow
+    assert "data/production/source-release.json" in workflow
+    assert "steps.probe.outputs.changed == 'true'" in workflow
+    assert "inputs.force" in workflow

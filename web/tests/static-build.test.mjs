@@ -24,6 +24,10 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /import\.meta\.env\.BASE_URL/);
   assert.match(app, /scope_make\.json/);
   assert.match(app, /scope_model\.json/);
+  assert.match(app, /monthly_make_powertrain\.json/);
+  assert.match(app, /monthly_model_powertrain\.json/);
+  assert.match(app, /scope_make_powertrain\.json/);
+  assert.match(app, /scope_model_powertrain\.json/);
   assert.match(app, /htmlFor="make-select"/);
   assert.match(app, /<optgroup label="Recognised makes">/);
   assert.match(app, /<optgroup label="Other \/ unmapped source makes">/);
@@ -32,6 +36,10 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /aria-pressed=\{vehicleView === value\}/);
   assert.match(app, /Latest entries/);
   assert.match(app, /Current fleet/);
+  assert.match(app, /aria-label="Leaderboard powertrain filter"/);
+  assert.match(app, /PASSENGER VEHICLES ONLY · MA \/ MB \/ MC/);
+  assert.match(app, /\["all", "combustion", "hybrid", "bev", "phev", "other"\]/);
+  assert.match(app, /leaderboardPowertrain === value/);
   assert.match(app, /CURRENT FLEET SNAPSHOT · 2007\+ SCOPE/);
   assert.match(app, /ARRIVAL CHANNEL BY POWERTRAIN/);
   assert.match(app, /arrivalPowertrains = \["combustion", "hybrid", "bev", "phev"\]/);
@@ -39,6 +47,7 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.doesNotMatch(styles, /\.powertrain-panel \{ grid-row: span 2/);
   assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
   assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
+  assert.doesNotMatch(app, /year-to-date through June/);
   assert.match(app, /href="https:\/\/www\.nzta\.govt\.nz\/resources\/new-zealand-motor-vehicle-register-statistics\/new-zealand-vehicle-fleet-open-data-sets"/);
   assert.doesNotMatch(styles, /--brand-mark-bg|--brand-mark-border/);
   assert.match(styles, /color-scheme:\s*dark/);
@@ -49,11 +58,15 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
 });
 
 test("synced data matches the approved production snapshot", async () => {
-  const [manifest, summary, scopeMakes, scopeModels] = await Promise.all([
+  const [manifest, summary, scopeMakes, scopeModels, monthlyMakePowertrains, monthlyModelPowertrains, scopeMakePowertrains, scopeModelPowertrains] = await Promise.all([
     readFile(new URL("../public/data/manifest.json", import.meta.url), "utf8").then(JSON.parse),
     readFile(new URL("../public/data/monthly_summary.json", import.meta.url), "utf8").then(JSON.parse),
     readFile(new URL("../public/data/scope_make.json", import.meta.url), "utf8").then(JSON.parse),
     readFile(new URL("../public/data/scope_model.json", import.meta.url), "utf8").then(JSON.parse),
+    readFile(new URL("../public/data/monthly_make_powertrain.json", import.meta.url), "utf8").then(JSON.parse),
+    readFile(new URL("../public/data/monthly_model_powertrain.json", import.meta.url), "utf8").then(JSON.parse),
+    readFile(new URL("../public/data/scope_make_powertrain.json", import.meta.url), "utf8").then(JSON.parse),
+    readFile(new URL("../public/data/scope_model_powertrain.json", import.meta.url), "utf8").then(JSON.parse),
   ]);
 
   assert.equal(manifest.contract.scope.vehicle_type, "PASSENGER CAR/VAN");
@@ -87,6 +100,21 @@ test("synced data matches the approved production snapshot", async () => {
     assert.equal(topCounts.length, 5);
     assert.ok(topCounts.every((count) => count > 0));
     assert.deepEqual(topCounts, [...topCounts].sort((a, b) => b - a));
+  }
+
+  const expectedPowertrains = ["bev", "combustion", "hybrid", "other", "phev"];
+  for (const dataset of [monthlyMakePowertrains, monthlyModelPowertrains]) {
+    const latestRecords = dataset.records.filter((row) => row.registration_month === summary.snapshot_month);
+    assert.deepEqual([...new Set(latestRecords.map((row) => row.powertrain_group))].sort(), expectedPowertrains);
+    for (const powertrain of expectedPowertrains) {
+      const ranks = latestRecords.filter((row) => row.powertrain_group === powertrain).map((row) => row.rank);
+      assert.deepEqual(ranks, [...ranks].sort((a, b) => a - b));
+      assert.ok(ranks.length > 0);
+    }
+  }
+  for (const dataset of [scopeMakePowertrains, scopeModelPowertrains]) {
+    assert.deepEqual([...new Set(dataset.records.map((row) => row.powertrain_group))].sort(), expectedPowertrains);
+    assert.ok(dataset.records.every((row) => row.vehicle_count > 0));
   }
 });
 
