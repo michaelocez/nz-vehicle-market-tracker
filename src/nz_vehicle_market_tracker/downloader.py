@@ -8,10 +8,27 @@ import sys
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
 DEFAULT_SOURCE_PAGE = "https://www.nzta.govt.nz/resources/new-zealand-motor-vehicle-register-statistics/new-zealand-vehicle-fleet-open-data-sets"
 USER_AGENT = "nz-vehicle-market-tracker/0.1 (+portfolio data pipeline)"
+
+
+class HttpsOnlyRedirectHandler(HTTPRedirectHandler):
+    """Allow redirects only when the resolved target remains on HTTPS."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        resolved_url = urljoin(req.full_url, newurl)
+        if urlparse(resolved_url).scheme.lower() != "https":
+            raise ValueError("Only HTTPS redirects are accepted")
+        return super().redirect_request(
+            req,
+            fp,
+            code,
+            msg,
+            headers,
+            resolved_url,
+        )
 
 
 class LinkParser(HTMLParser):
@@ -73,8 +90,11 @@ def download(url: str, destination_dir: Path) -> Path:
     destination = destination_dir / filename
     temporary = destination.with_suffix(destination.suffix + ".part")
     request = Request(url, headers={"User-Agent": USER_AGENT})
+    opener = build_opener(HttpsOnlyRedirectHandler())
     try:
-        with urlopen(request, timeout=120) as response, temporary.open("wb") as handle:
+        with opener.open(request, timeout=120) as response, temporary.open(
+            "wb"
+        ) as handle:
             shutil.copyfileobj(response, handle, length=1024 * 1024)
         temporary.replace(destination)
     finally:
