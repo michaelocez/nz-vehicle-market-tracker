@@ -22,11 +22,7 @@ from .domain import (
 )
 from .source import (
     ANALYTICAL_COLUMNS as REQUIRED_COLUMNS,
-)
-from .source import (
     SENSITIVE_COLUMNS,
-)
-from .source import (
     open_fleet_csv as inspect_source,
 )
 

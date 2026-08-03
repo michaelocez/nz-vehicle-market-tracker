@@ -62,10 +62,7 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Check TypeScript
-        run: npm run typecheck
-
-      - name: Build the production dashboard
+      - name: Type-check and build the production dashboard
         run: npm run build
 
       - name: Test the static build
