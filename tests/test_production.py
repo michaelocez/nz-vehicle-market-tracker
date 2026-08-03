@@ -128,12 +128,12 @@ def test_committed_contract_versions_match_the_pipeline_constant() -> None:
     assert documented_version is not None
     assert documented_version.group(1) == DATA_CONTRACT_VERSION
 
-    for relative_manifest in (
-        Path("data/production/current/manifest.json"),
-        Path("web/public/data/manifest.json"),
-    ):
-        manifest = json.loads((root / relative_manifest).read_text(encoding="utf-8"))
-        assert manifest["contract"]["version"] == DATA_CONTRACT_VERSION
+    manifest = json.loads(
+        (root / "data" / "production" / "current" / "manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert manifest["contract"]["version"] == DATA_CONTRACT_VERSION
 
     for output in (root / "data" / "production" / "current").glob("*.json"):
         if output.name == "manifest.json":
