@@ -138,7 +138,8 @@ def test_committed_contract_versions_match_the_pipeline_constant() -> None:
     for output in (root / "data" / "production" / "current").glob("*.json"):
         if output.name == "manifest.json":
             continue
-        prefix = output.read_text(encoding="utf-8")[:200]
+        with output.open(encoding="utf-8") as handle:
+            prefix = handle.read(200)
         version = re.search(r'"contract_version"\s*:\s*"([^"]+)"', prefix)
         assert version is not None, f"Missing contract_version in {output.name}"
         assert version.group(1) == DATA_CONTRACT_VERSION, output.name
