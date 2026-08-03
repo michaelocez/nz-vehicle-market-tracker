@@ -2,6 +2,7 @@
 
 [![Deploy GitHub Pages](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/deploy-pages.yml)
 [![Refresh NZTA aggregates](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/refresh-data.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/refresh-data.yml)
+[![Pull request validation](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/pull-request.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/pull-request.yml)
 
 An interactive data product exploring how New Zealand's passenger-vehicle fleet
 is changing. It turns NZTA's multi-gigabyte current-fleet release into a small,
