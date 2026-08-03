@@ -10,7 +10,7 @@ import re
 import sys
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .domain import (
@@ -24,7 +24,6 @@ from .domain import (
     registration_month,
 )
 from .source import ANALYTICAL_COLUMNS, open_fleet_csv
-
 
 DATA_CONTRACT_VERSION = "1.2.0"
 DEFAULT_START_MONTH = "2007-01"
@@ -86,7 +85,7 @@ def infer_snapshot_month(member_name: str) -> str | None:
     if not match:
         return None
     try:
-        return datetime.strptime(match.group(1), "%d%b%Y").strftime("%Y-%m")
+        return datetime.strptime(match.group(1), "%d%b%Y").replace(tzinfo=UTC).strftime("%Y-%m")
     except ValueError:
         return None
 
@@ -414,7 +413,7 @@ def write_outputs(result: dict[str, object], output_dir: Path) -> dict[str, obje
     manifest = {
         "contract": result["contract"],
         "source": result["source"],
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
         "quality": result["quality"],
         "brand_coverage": result["brand_coverage"],
         "files": {},
