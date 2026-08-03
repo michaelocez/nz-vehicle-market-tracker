@@ -18,6 +18,7 @@ type CountryRecord = CountRecord & { previous_country: string };
 type AgeRecord = CountRecord & { approximate_import_age: number };
 type DataFile<T> = { contract_version: string; snapshot_month: string; records: T[] };
 type Manifest = {
+  contract: { version: string };
   source: { snapshot_month: string };
   quality: { included_rows: number; mapped_brand_rows: number };
   brand_coverage: { mapped_share: number };
@@ -567,7 +568,7 @@ export default function Home() {
           <div className="method-copy">
             <p>This dashboard includes NZTA <strong>PASSENGER CAR/VAN</strong> records in classes MA, MB and MC, first registered in New Zealand from January 2007 onward.</p>
             <p>It excludes motorcycles, trucks, buses, trailers, caravans, ATVs, tractors and special-purpose machinery. Earlier cohorts reconstructed from the current fleet carry survivorship bias.</p>
-            <div className="method-stats"><span><b>{compact.format(data.manifest.quality.included_rows)}</b> scoped records</span><span><b>{percent(data.manifest.brand_coverage.mapped_share)}</b> brand mapping</span><span><b>v1.1</b> data contract</span></div>
+            <div className="method-stats"><span><b>{compact.format(data.manifest.quality.included_rows)}</b> scoped records</span><span><b>{percent(data.manifest.brand_coverage.mapped_share)}</b> brand mapping</span><span><b>v{data.manifest.contract.version}</b> data contract</span></div>
           </div>
         </div>
       </section>

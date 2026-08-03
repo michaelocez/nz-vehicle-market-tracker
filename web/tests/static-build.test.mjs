@@ -48,6 +48,8 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
   assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
   assert.doesNotMatch(app, /year-to-date through June/);
+  assert.match(app, /data\.manifest\.contract\.version/);
+  assert.doesNotMatch(app, /<b>v\d+\.\d+(?:\.\d+)?<\/b> data contract/);
   assert.match(app, /href="https:\/\/www\.nzta\.govt\.nz\/resources\/new-zealand-motor-vehicle-register-statistics\/new-zealand-vehicle-fleet-open-data-sets"/);
   assert.doesNotMatch(styles, /--brand-mark-bg|--brand-mark-border/);
   assert.match(styles, /color-scheme:\s*dark/);
@@ -71,6 +73,9 @@ test("synced data matches the approved production snapshot", async () => {
 
   assert.equal(manifest.contract.scope.vehicle_type, "PASSENGER CAR/VAN");
   assert.deepEqual(manifest.contract.scope.classes, ["MA", "MB", "MC"]);
+  for (const dataset of [summary, scopeMakes, scopeModels, monthlyMakePowertrains, monthlyModelPowertrains, scopeMakePowertrains, scopeModelPowertrains]) {
+    assert.equal(dataset.contract_version, manifest.contract.version);
+  }
   assert.equal(
     summary.snapshot_month,
     summary.records.reduce((latest, row) => row.registration_month > latest ? row.registration_month : latest, ""),
