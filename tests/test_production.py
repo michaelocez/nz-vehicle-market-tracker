@@ -1,9 +1,11 @@
 import csv
 import json
+import re
 import zipfile
 from pathlib import Path
 
 from nz_vehicle_market_tracker.production import (
+    DATA_CONTRACT_VERSION,
     BrandInfo,
     BrandReference,
     ProductionConfig,
@@ -114,8 +116,33 @@ def test_writes_checksummed_dimension_files(tmp_path: Path) -> None:
     assert (output / "manifest.json").is_file()
     assert len(manifest["files"]) == 14
     monthly_summary = json.loads((output / "monthly_summary.json").read_text())
-    assert monthly_summary["contract_version"] == "1.2.0"
+    assert monthly_summary["contract_version"] == DATA_CONTRACT_VERSION
     assert monthly_summary["snapshot_month"] == "2026-06"
+
+
+def test_committed_contract_versions_match_the_pipeline_constant() -> None:
+    root = Path(__file__).resolve().parents[1]
+    document = (root / "docs" / "data-contract.md").read_text(encoding="utf-8")
+    documented_version = re.search(r"Contract version: `([^`]+)`", document)
+
+    assert documented_version is not None
+    assert documented_version.group(1) == DATA_CONTRACT_VERSION
+
+    manifest = json.loads(
+        (root / "data" / "production" / "current" / "manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert manifest["contract"]["version"] == DATA_CONTRACT_VERSION
+
+    for output in (root / "data" / "production" / "current").glob("*.json"):
+        if output.name == "manifest.json":
+            continue
+        with output.open(encoding="utf-8") as handle:
+            prefix = handle.read(200)
+        version = re.search(r'"contract_version"\s*:\s*"([^"]+)"', prefix)
+        assert version is not None, f"Missing contract_version in {output.name}"
+        assert version.group(1) == DATA_CONTRACT_VERSION, output.name
 
 
 def test_leaderboard_powertrain_groups_keep_main_options_and_combine_small_groups() -> None:
