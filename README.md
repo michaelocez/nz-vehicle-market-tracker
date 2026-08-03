@@ -13,6 +13,7 @@ versioned set of aggregates and a responsive static dashboard.
 
 - NZ-new vehicles versus used imports entering the fleet over time.
 - The leading makes and models in the latest month and current scoped fleet.
+- Powertrain-filtered make and model rankings for passenger vehicles.
 - Combustion, hybrid, battery-electric and plug-in-hybrid composition.
 - NZ-new versus used-import arrival channels within each major powertrain.
 - Previous registration countries for used imports.
@@ -32,7 +33,7 @@ flowchart LR
     B --> C["Validated aggregate JSON"]
     C --> D["React and TypeScript dashboard"]
     D --> E["GitHub Pages"]
-    F["Weekly GitHub Actions check"] --> A
+    F["Daily release-metadata check"] --> A
 ```
 
 The website is entirely static. It requires no backend, user accounts or
@@ -48,11 +49,12 @@ database, and the raw vehicle-level dataset is never deployed.
 
 ## Automated data refresh
 
-The `Refresh NZTA aggregates` workflow checks every Monday for a changed NZTA
-all-vehicle-years release. It downloads the ZIP into temporary runner storage,
-runs the Python and frontend tests, rebuilds the aggregates, and commits only
-changed aggregate JSON. The raw ZIP and fleet CSV are discarded with the
-runner, so no monthly maintenance or personal access token is required.
+The `Refresh NZTA aggregates` workflow checks the official release metadata
+every day. When the URL, ETag, last-modified date and file size are unchanged,
+the run stops before downloading the large ZIP. A changed release is downloaded
+into temporary runner storage, tested, rebuilt and published. The raw ZIP and
+fleet CSV are discarded with the runner, so no monthly maintenance or personal
+access token is required.
 
 Each changed snapshot updates `data/production/current/` and is retained under
 `data/production/archive/YYYY-MM/`. Dataset checksums prevent unnecessary

@@ -9,6 +9,7 @@ from nz_vehicle_market_tracker.production import (
     ProductionConfig,
     aggregate,
     infer_snapshot_month,
+    leaderboard_powertrain_group,
     write_outputs,
 )
 from nz_vehicle_market_tracker.source import ANALYTICAL_COLUMNS
@@ -111,10 +112,19 @@ def test_writes_checksummed_dimension_files(tmp_path: Path) -> None:
     manifest = write_outputs(result, output)
 
     assert (output / "manifest.json").is_file()
-    assert len(manifest["files"]) == 10
+    assert len(manifest["files"]) == 14
     monthly_summary = json.loads((output / "monthly_summary.json").read_text())
-    assert monthly_summary["contract_version"] == "1.1.0"
+    assert monthly_summary["contract_version"] == "1.2.0"
     assert monthly_summary["snapshot_month"] == "2026-06"
+
+
+def test_leaderboard_powertrain_groups_keep_main_options_and_combine_small_groups() -> None:
+    assert leaderboard_powertrain_group("combustion") == "combustion"
+    assert leaderboard_powertrain_group("hybrid") == "hybrid"
+    assert leaderboard_powertrain_group("bev") == "bev"
+    assert leaderboard_powertrain_group("phev") == "phev"
+    assert leaderboard_powertrain_group("hydrogen") == "other"
+    assert leaderboard_powertrain_group("range_extended_ev") == "other"
 
 
 def test_infers_snapshot_month() -> None:
@@ -136,7 +146,13 @@ def test_scope_model_totals_are_not_limited_by_monthly_leaderboard(tmp_path: Pat
     scope_all = [
         row for row in result["datasets"]["scope_model"] if row["import_status_group"] == "all"
     ]
+    scope_hybrid = [
+        row
+        for row in result["datasets"]["scope_model_powertrain"]
+        if row["powertrain_group"] == "hybrid"
+    ]
 
     assert len(monthly_all) == 25
     assert len(scope_all) == 26
+    assert len(scope_hybrid) == 25
     assert sum(row["vehicle_count"] for row in scope_all) == 26
