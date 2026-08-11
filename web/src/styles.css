@@ -95,6 +95,17 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .year-column > span { font-size: 10px; color: var(--ink-soft); height: 28px; padding-top: 8px; }
 .year-column.active > span { color: var(--ink); font-weight: 800; }
 .chart-note { color: #6b7d80; font-size: 11px; line-height: 1.5; margin: 17px 0 0; }
+.monthly-detail-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-top: 34px; }
+.monthly-detail-heading p { margin: 8px 0 0; color: var(--ink-soft); font-size: 13px; }
+.monthly-detail-controls { display: flex; align-items: end; gap: 8px; }
+.monthly-detail-controls label { display: grid; gap: 6px; }
+.monthly-detail-controls label > span { color: var(--ink-soft); font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.monthly-detail-controls select, .monthly-detail-controls button { height: 38px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface-raised); color: var(--ink); }
+.monthly-detail-controls select { min-width: 92px; padding: 0 30px 0 11px; cursor: pointer; }
+.monthly-detail-controls button { width: 38px; display: grid; place-items: center; padding: 0; font-size: 17px; line-height: 1; cursor: pointer; }
+.monthly-detail-controls button:hover:not(:disabled), .monthly-detail-controls select:hover { border-color: var(--primary); }
+.monthly-detail-controls button:focus-visible, .monthly-detail-controls select:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 2px; }
+.monthly-detail-controls button:disabled { color: var(--ink-subtle); cursor: not-allowed; opacity: .45; }
 .insight-strip { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 20px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .insight-strip article { padding: 28px 30px; border-right: 1px solid var(--line); }
 .insight-strip article:last-child { border-right: 0; }
@@ -141,6 +152,10 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .ranking-panel li > b { font-size: 13px; }
 
 .imports-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.country-kicker-toggle { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.country-kicker-toggle > span:last-child { color: var(--ink-subtle); font-size: 14px; line-height: 1; transition: color .18s ease; }
+.country-kicker-toggle:hover > span:last-child { color: var(--primary-hover); }
+.country-kicker-toggle:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 5px; }
 .country-list { margin-top: 37px; display: grid; gap: 18px; }
 .country-row { display: grid; grid-template-columns: 24px 110px 1fr 55px; align-items: center; gap: 10px; font-size: 12px; }
 .country-row > span { font: 10px ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--primary-hover); }
@@ -229,6 +244,10 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
   .market-chart-toolbar { align-items: start; flex-direction: column; gap: 18px; }
   .annual-readout { width: 100%; justify-content: space-between; gap: 12px; }
   .chart-key { align-self: flex-end; }
+  .monthly-detail-heading { align-items: start; flex-direction: column; }
+  .monthly-detail-controls { width: 100%; }
+  .monthly-detail-controls label { flex: 1; }
+  .monthly-detail-controls select { width: 100%; min-width: 0; }
   .arrival-mix-heading { align-items: start; flex-direction: column; gap: 12px; }
   .arrival-mix-row > div:first-child { grid-template-columns: 100px 1fr auto; gap: 8px; }
   .year-chart { height: 290px; gap: 7px; }

@@ -126,6 +126,8 @@ export default function Home() {
   const [vehicleView, setVehicleView] = useState<VehicleView>("latest");
   const [leaderboardPowertrain, setLeaderboardPowertrain] = useState<LeaderboardPowertrain>("all");
   const [activeMarketYear, setActiveMarketYear] = useState<number | null>(null);
+  const [selectedMarketMonth, setSelectedMarketMonth] = useState("");
+  const [countryView, setCountryView] = useState<VehicleView>("latest");
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
 
@@ -222,11 +224,6 @@ export default function Home() {
           : (a as ScopeModelPowertrainRecord).rank - (b as ScopeModelPowertrainRecord).rank)
         .slice(0, 5)
         .map((row, index) => ({ ...row, rank: index + 1, registration_count: row.vehicle_count }));
-    const topCountries = data.countries.records
-      .filter((row) => row.registration_month === latest)
-      .sort((a, b) => b.registration_count - a.registration_count)
-      .slice(0, 6);
-    const countryMax = Math.max(...topCountries.map((row) => row.registration_count));
     const latestAges = data.ages.records.filter((row) => row.registration_month === latest);
     const ageBuckets = [
       { label: "0–2 years", min: 0, max: 2 },
@@ -253,7 +250,7 @@ export default function Home() {
       : `${leaderboardPowertrainLabel[leaderboardPowertrain].toUpperCase()} · ${vehicleLabel}`;
     return {
       latest, nzNew, used, latestTotal, annual, annualMax, powertrains, powertrainMax, arrivalMix,
-      topMakes, topModels, topCountries, countryMax, ageBuckets, ageMax,
+      topMakes, topModels, ageBuckets, ageMax,
       medianAge: weightedMedian(latestAges), electric, vehicleTotal, vehicleLabel, rankingContext,
     };
   }, [data, range, vehicleView, leaderboardPowertrain]);
@@ -292,6 +289,11 @@ export default function Home() {
     };
   }, [data, selectedMake, selectedModel]);
 
+  const marketMonths = useMemo(() => {
+    if (!data) return [];
+    return [...new Set(data.summary.records.map((row) => row.registration_month))].sort();
+  }, [data]);
+
   if (error) return <ErrorState />;
   if (!data || !view || !explorer) {
     return <main className="state-page"><div className="loading-line" aria-label="Loading dashboard" /></main>;
@@ -299,6 +301,39 @@ export default function Home() {
 
   const activeAnnual = view.annual.find((row) => row.year === activeMarketYear)
     ?? view.annual.at(-1);
+  const marketMonth = marketMonths.includes(selectedMarketMonth) ? selectedMarketMonth : view.latest;
+  const marketMonthIndex = marketMonths.indexOf(marketMonth);
+  const marketYears = [...new Set(marketMonths.map((month) => month.slice(0, 4)))];
+  const marketYearMonths = marketMonths.filter((month) => month.startsWith(marketMonth.slice(0, 4)));
+  const marketMonthRecords = data.summary.records.filter((row) => row.registration_month === marketMonth);
+  const marketCountFor = (status: string) => marketMonthRecords
+    .find((row) => row.import_status_group === status)?.registration_count ?? 0;
+  const monthlyDetail = {
+    nzNew: marketCountFor("nz_new"),
+    used: marketCountFor("used_import"),
+    other: marketCountFor("other_or_unknown"),
+  };
+  const monthlyDetailTotal = monthlyDetail.nzNew + monthlyDetail.used + monthlyDetail.other;
+  const countryRecords = countryView === "latest"
+    ? data.countries.records.filter((row) => row.registration_month === view.latest)
+    : data.countries.records;
+  const topCountries = [...countryRecords.reduce((counts, row) => {
+    counts.set(row.previous_country, (counts.get(row.previous_country) ?? 0) + row.registration_count);
+    return counts;
+  }, new Map<string, number>())]
+    .map(([previous_country, registration_count]) => ({ previous_country, registration_count }))
+    .sort((a, b) => b.registration_count - a.registration_count)
+    .slice(0, 6);
+  const countryMax = Math.max(1, ...topCountries.map((row) => row.registration_count));
+  const countryViewLabel = countryView === "latest"
+    ? prettyMonth(view.latest).toUpperCase()
+    : "CURRENT FLEET · 2007+";
+
+  function selectMarketYear(year: number) {
+    const months = marketMonths.filter((month) => month.startsWith(`${year}-`));
+    const latestMonth = months.at(-1);
+    if (latestMonth) setSelectedMarketMonth(latestMonth);
+  }
 
   return (
     <main>
@@ -377,7 +412,10 @@ export default function Home() {
                 aria-pressed={activeAnnual?.year === row.year}
                 onMouseEnter={() => setActiveMarketYear(row.year)}
                 onFocus={() => setActiveMarketYear(row.year)}
-                onClick={() => setActiveMarketYear(row.year)}
+                onClick={() => {
+                  setActiveMarketYear(row.year);
+                  selectMarketYear(row.year);
+                }}
               >
                 <div className="year-bars" aria-hidden="true">
                   <i className="bar-new" style={{ height: `${Math.max(2, (row.nz_new / view.annualMax) * 100)}%` }} />
@@ -387,13 +425,50 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <p className="chart-note">{view.latest.slice(0, 4)} is year-to-date through {prettyMonthName(view.latest)}. Hover, focus or tap a year for exact counts.</p>
+          <p className="chart-note">{view.latest.slice(0, 4)} is year-to-date through {prettyMonthName(view.latest)}. Hover or focus for annual counts; select a year to open its latest month below.</p>
+        </div>
+
+        <div className="monthly-detail-heading">
+          <div>
+            <span className="panel-kicker">MONTHLY DETAIL</span>
+            <p>Browse exact passenger-vehicle entries for any available month.</p>
+          </div>
+          <div className="monthly-detail-controls" aria-label="Monthly detail period">
+            <button
+              type="button"
+              aria-label="Previous month"
+              disabled={marketMonthIndex <= 0}
+              onClick={() => setSelectedMarketMonth(marketMonths[marketMonthIndex - 1])}
+            >
+              &larr;
+            </button>
+            <label>
+              <span>Year</span>
+              <select value={marketMonth.slice(0, 4)} onChange={(event) => selectMarketYear(Number(event.target.value))}>
+                {marketYears.map((year) => <option key={year} value={year}>{year}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>Month</span>
+              <select value={marketMonth} onChange={(event) => setSelectedMarketMonth(event.target.value)}>
+                {marketYearMonths.map((month) => <option key={month} value={month}>{prettyMonthName(month)}</option>)}
+              </select>
+            </label>
+            <button
+              type="button"
+              aria-label="Next month"
+              disabled={marketMonthIndex >= marketMonths.length - 1}
+              onClick={() => setSelectedMarketMonth(marketMonths[marketMonthIndex + 1])}
+            >
+              &rarr;
+            </button>
+          </div>
         </div>
 
         <div className="insight-strip">
-          <article><span>NZ-new</span><strong>{number.format(view.nzNew)}</strong><p>vehicles in {prettyMonth(view.latest)}</p></article>
-          <article><span>Used imports</span><strong>{number.format(view.used)}</strong><p>vehicles in {prettyMonth(view.latest)}</p></article>
-          <article className="accent"><span>Import mix</span><strong>{percent(view.used / view.latestTotal)}</strong><p>of the latest month came in used</p></article>
+          <article><span>NZ-new</span><strong>{number.format(monthlyDetail.nzNew)}</strong><p>vehicles in {prettyMonth(marketMonth)}</p></article>
+          <article><span>Used imports</span><strong>{number.format(monthlyDetail.used)}</strong><p>vehicles in {prettyMonth(marketMonth)}</p></article>
+          <article className="accent"><span>Import mix</span><strong>{percent(monthlyDetailTotal ? monthlyDetail.used / monthlyDetailTotal : 0)}</strong><p>of {prettyMonth(marketMonth)} entries came in used</p></article>
         </div>
       </section>
 
@@ -497,17 +572,35 @@ export default function Home() {
 
         <div className="imports-grid">
           <article className="panel country-panel">
-            <div className="panel-heading simple"><div><span className="panel-kicker">PREVIOUS COUNTRY</span><h3>Japan dominates the import channel.</h3></div></div>
+            <div className="panel-heading simple">
+              <div>
+                <button
+                  type="button"
+                  className="country-kicker-toggle"
+                  aria-label={`Show ${countryView === "latest" ? "current fleet" : "latest month"} previous-country counts`}
+                  aria-pressed={countryView === "snapshot"}
+                  onClick={() => setCountryView((current) => current === "latest" ? "snapshot" : "latest")}
+                >
+                  <span className="panel-kicker">PREVIOUS COUNTRY · {countryViewLabel}</span>
+                  <span aria-hidden="true">↔</span>
+                </button>
+                <h3>Japan dominates the import channel.</h3>
+              </div>
+            </div>
             <div className="country-list">
-              {view.topCountries.map((row, index) => (
+              {topCountries.map((row, index) => (
                 <div className="country-row" key={row.previous_country}>
                   <span>{String(index + 1).padStart(2, "0")}</span><strong>{row.previous_country}</strong>
-                  <i><em style={{ width: `${(row.registration_count / view.countryMax) * 100}%` }} /></i>
+                  <i><em style={{ width: `${(row.registration_count / countryMax) * 100}%` }} /></i>
                   <b>{number.format(row.registration_count)}</b>
                 </div>
               ))}
             </div>
-            <p className="chart-note">Previous country means prior registration/import country, not manufacturing country.</p>
+            <p className="chart-note">
+              {countryView === "latest"
+                ? `Previous registration/import country of used imports first registered in New Zealand during ${prettyMonth(view.latest)}; not manufacturing country.`
+                : "Previous registration/import country among 2007+ used imports still represented in the current fleet snapshot; not manufacturing country."}
+            </p>
           </article>
 
           <article className="panel age-panel">

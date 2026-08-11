@@ -47,7 +47,16 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /className="annual-readout"/);
   assert.match(app, /onMouseEnter=\{\(\) => setActiveMarketYear\(row\.year\)\}/);
   assert.match(app, /aria-pressed=\{activeAnnual\?\.year === row\.year\}/);
-  assert.match(app, /Hover, focus or tap a year for exact counts/);
+  assert.match(app, /className="monthly-detail-controls"/);
+  assert.match(app, /aria-label="Previous month"/);
+  assert.match(app, /aria-label="Next month"/);
+  assert.match(app, /setSelectedMarketMonth/);
+  assert.match(app, /Browse exact passenger-vehicle entries for any available month/);
+  assert.match(app, /className="country-kicker-toggle"/);
+  assert.match(app, /aria-pressed=\{countryView === "snapshot"\}/);
+  assert.match(app, /setCountryView/);
+  assert.match(app, /CURRENT FLEET · 2007\+/);
+  assert.doesNotMatch(app, /setSelectedCountryMonth/);
   assert.doesNotMatch(styles, /\.powertrain-panel \{ grid-row: span 2/);
   assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
   assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
