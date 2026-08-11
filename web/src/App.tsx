@@ -125,6 +125,7 @@ export default function Home() {
   const [range, setRange] = useState<Range>("10y");
   const [vehicleView, setVehicleView] = useState<VehicleView>("latest");
   const [leaderboardPowertrain, setLeaderboardPowertrain] = useState<LeaderboardPowertrain>("all");
+  const [activeMarketYear, setActiveMarketYear] = useState<number | null>(null);
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
 
@@ -296,6 +297,9 @@ export default function Home() {
     return <main className="state-page"><div className="loading-line" aria-label="Loading dashboard" /></main>;
   }
 
+  const activeAnnual = view.annual.find((row) => row.year === activeMarketYear)
+    ?? view.annual.at(-1);
+
   return (
     <main>
       <header className="hero" id="overview">
@@ -353,19 +357,37 @@ export default function Home() {
         <p className="section-lead">Annual passenger-vehicle entries, split by how they first arrived in New Zealand.</p>
 
         <div className="chart-card market-card">
-          <div className="chart-key"><span className="key-new">NZ-new</span><span className="key-used">Used imports</span></div>
-          <div className="year-chart" role="img" aria-label="Annual NZ-new and used-import passenger vehicle registrations">
+          <div className="market-chart-toolbar">
+            {activeAnnual && (
+              <div className="annual-readout" aria-label={`Selected year ${activeAnnual.year}`}>
+                <strong>{activeAnnual.year}</strong>
+                <span className="readout-new"><b>{number.format(activeAnnual.nz_new)}</b>NZ-new</span>
+                <span className="readout-used"><b>{number.format(activeAnnual.used_import)}</b>Used imports</span>
+              </div>
+            )}
+            <div className="chart-key" aria-hidden="true"><span className="key-new">NZ-new</span><span className="key-used">Used imports</span></div>
+          </div>
+          <div className="year-chart" role="group" aria-label="Annual NZ-new and used-import passenger vehicle registrations">
             {view.annual.map((row) => (
-              <div className="year-column" key={row.year} title={`${row.year}: ${number.format(row.nz_new)} NZ-new, ${number.format(row.used_import)} used imports`}>
-                <div className="year-bars">
+              <button
+                type="button"
+                className={`year-column${activeAnnual?.year === row.year ? " active" : ""}`}
+                key={row.year}
+                aria-label={`${row.year}: ${number.format(row.nz_new)} NZ-new, ${number.format(row.used_import)} used imports`}
+                aria-pressed={activeAnnual?.year === row.year}
+                onMouseEnter={() => setActiveMarketYear(row.year)}
+                onFocus={() => setActiveMarketYear(row.year)}
+                onClick={() => setActiveMarketYear(row.year)}
+              >
+                <div className="year-bars" aria-hidden="true">
                   <i className="bar-new" style={{ height: `${Math.max(2, (row.nz_new / view.annualMax) * 100)}%` }} />
                   <i className="bar-used" style={{ height: `${Math.max(2, (row.used_import / view.annualMax) * 100)}%` }} />
                 </div>
                 <span>{row.year}</span>
-              </div>
+              </button>
             ))}
           </div>
-          <p className="chart-note">{view.latest.slice(0, 4)} is year-to-date through {prettyMonthName(view.latest)}. Hover a year for exact counts.</p>
+          <p className="chart-note">{view.latest.slice(0, 4)} is year-to-date through {prettyMonthName(view.latest)}. Hover, focus or tap a year for exact counts.</p>
         </div>
 
         <div className="insight-strip">

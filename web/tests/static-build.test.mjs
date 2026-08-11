@@ -44,6 +44,10 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /ARRIVAL CHANNEL BY POWERTRAIN/);
   assert.match(app, /arrivalPowertrains = \["combustion", "hybrid", "bev", "phev"\]/);
   assert.match(app, /className="panel arrival-panel"/);
+  assert.match(app, /className="annual-readout"/);
+  assert.match(app, /onMouseEnter=\{\(\) => setActiveMarketYear\(row\.year\)\}/);
+  assert.match(app, /aria-pressed=\{activeAnnual\?\.year === row\.year\}/);
+  assert.match(app, /Hover, focus or tap a year for exact counts/);
   assert.doesNotMatch(styles, /\.powertrain-panel \{ grid-row: span 2/);
   assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
   assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
