@@ -150,6 +150,22 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .ranking-panel li strong { font-size: 14px; }
 .ranking-panel li small { color: var(--ink-soft); font-size: 10px; margin-top: 2px; }
 .ranking-panel li > b { font-size: 13px; }
+.fleet-age-panel { margin-top: 20px; }
+.fleet-age-heading { display: flex; justify-content: space-between; align-items: start; gap: 42px; }
+.fleet-age-heading h3 { max-width: 650px; margin: 13px 0 0; font-size: 28px; line-height: 1.2; letter-spacing: -.6px; font-weight: 600; }
+.fleet-age-stats { display: grid; grid-template-columns: repeat(3, minmax(92px, 1fr)); gap: 24px; text-align: right; }
+.fleet-age-stats span { color: var(--ink-soft); font-size: 9px; line-height: 1.35; letter-spacing: .1em; text-transform: uppercase; }
+.fleet-age-stats b { display: block; color: var(--ink); font-size: 30px; line-height: 1; letter-spacing: -.04em; margin-bottom: 6px; text-transform: none; }
+.fleet-age-readout { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; margin-top: 36px; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
+.fleet-age-readout > span { color: var(--primary-hover); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.fleet-age-readout strong { font-size: 18px; }
+.fleet-age-readout small { color: var(--ink-soft); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; }
+.fleet-age-chart { height: 220px; display: flex; gap: 3px; align-items: stretch; padding-top: 15px; }
+.fleet-age-chart button { flex: 1 1 0; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--ink-soft); display: grid; grid-template-rows: 1fr 18px; align-items: end; cursor: pointer; }
+.fleet-age-chart button i { width: 100%; min-height: 2px; display: block; background: var(--series-muted); opacity: .72; transition: opacity .15s ease, background .15s ease; }
+.fleet-age-chart button span { align-self: end; font-size: 9px; line-height: 1; }
+.fleet-age-chart button:hover i, .fleet-age-chart button.active i, .fleet-age-chart button:focus-visible i { background: var(--series-new); opacity: 1; }
+.fleet-age-chart button:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 2px; }
 
 .imports-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .country-kicker-toggle { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
@@ -220,6 +236,8 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
   .dashboard-grid, .imports-grid, .explorer-grid, .methodology-grid { grid-template-columns: 1fr; }
   .methodology-grid { gap: 45px; }
   .hero { min-height: auto; }
+  .fleet-age-heading { flex-direction: column; }
+  .fleet-age-stats { width: 100%; text-align: left; }
 }
 
 @media (max-width: 640px) {
@@ -241,6 +259,10 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
   .ranking-filter .range-control { max-width: 100%; overflow-x: auto; }
   .ranking-filter .range-control button { flex: 0 0 auto; }
   .market-card, .panel { padding: 24px 20px; }
+  .fleet-age-heading { gap: 28px; }
+  .fleet-age-stats { gap: 12px; }
+  .fleet-age-stats b { font-size: 26px; }
+  .fleet-age-readout { align-items: start; flex-direction: column; gap: 6px; }
   .market-chart-toolbar { align-items: start; flex-direction: column; gap: 18px; }
   .annual-readout { width: 100%; justify-content: space-between; gap: 12px; }
   .chart-key { align-self: flex-end; }

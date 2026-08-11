@@ -25,8 +25,9 @@ from .domain import (
 )
 from .source import ANALYTICAL_COLUMNS, open_fleet_csv
 
-DATA_CONTRACT_VERSION = "1.2.0"
+DATA_CONTRACT_VERSION = "1.3.0"
 DEFAULT_START_MONTH = "2007-01"
+MAX_CURRENT_FLEET_AGE = 150
 DEFAULT_BRAND_REFERENCE = Path("data/reference/brand_countries.csv")
 DEFAULT_OUTPUT_DIR = Path("data/production/current")
 LEADERBOARD_LIMIT = 25
@@ -147,8 +148,21 @@ def aggregate(
     metadata, archive, stream = open_fleet_csv(zip_path)
     text, reader = stream
     indexes = {name: metadata.source_columns.index(name) for name in ANALYTICAL_COLUMNS}
+    snapshot_month = infer_snapshot_month(metadata.member_name)
+    if snapshot_month is None:
+        text.close()
+        archive.close()
+        raise ValueError("Could not infer the fleet snapshot month from the CSV filename")
+    snapshot_year = int(snapshot_month[:4])
 
     quality = Counter()
+    for field in (
+        "current_fleet_age_rows",
+        "excluded_current_fleet_age_missing_or_invalid_vehicle_year_rows",
+        "excluded_current_fleet_age_future_vehicle_year_rows",
+        "excluded_current_fleet_age_implausible_vehicle_year_rows",
+    ):
+        quality[field] = 0
     monthly_summary: Counter[tuple[str, str]] = Counter()
     monthly_powertrain: Counter[tuple[str, str, str]] = Counter()
     monthly_make: Counter[tuple[str, str, str, str, str]] = Counter()
@@ -159,6 +173,7 @@ def aggregate(
     scope_model: Counter[tuple[str, str, str]] = Counter()
     scope_make_powertrain: Counter[tuple[str, str, str, str]] = Counter()
     scope_model_powertrain: Counter[tuple[str, str, str]] = Counter()
+    scope_vehicle_age: Counter[tuple[int]] = Counter()
     monthly_brand_country: Counter[tuple[str, str, str]] = Counter()
     monthly_previous_country: Counter[tuple[str, str]] = Counter()
     monthly_vehicle_year: Counter[tuple[str, str, int, bool]] = Counter()
@@ -177,6 +192,19 @@ def aggregate(
                 quality["non_passenger_rows"] += 1
                 continue
             quality["passenger_rows"] += 1
+
+            current_vehicle_year = parse_int(value["VEHICLE_YEAR"])
+            if current_vehicle_year is None:
+                quality["excluded_current_fleet_age_missing_or_invalid_vehicle_year_rows"] += 1
+            else:
+                current_age = snapshot_year - current_vehicle_year
+                if current_age < 0:
+                    quality["excluded_current_fleet_age_future_vehicle_year_rows"] += 1
+                elif current_age > MAX_CURRENT_FLEET_AGE:
+                    quality["excluded_current_fleet_age_implausible_vehicle_year_rows"] += 1
+                else:
+                    scope_vehicle_age[(current_age,)] += 1
+                    quality["current_fleet_age_rows"] += 1
 
             month = registration_month(
                 value["FIRST_NZ_REGISTRATION_YEAR"],
@@ -272,6 +300,13 @@ def aggregate(
         raise RuntimeError("Scope model totals do not reconcile to included rows")
     if sum(count for values, count in scope_model.items() if values[0] != "all") != included:
         raise RuntimeError("Scope model status totals do not reconcile to included rows")
+    current_age_excluded = sum(
+        count
+        for name, count in quality.items()
+        if name.startswith("excluded_current_fleet_age_")
+    )
+    if quality["current_fleet_age_rows"] + current_age_excluded != quality["passenger_rows"]:
+        raise RuntimeError("Current-fleet age totals do not reconcile to passenger rows")
 
     return {
         "contract": {
@@ -289,7 +324,7 @@ def aggregate(
         "source": {
             "file": zip_path.name,
             "member": metadata.member_name,
-            "snapshot_month": infer_snapshot_month(metadata.member_name),
+            "snapshot_month": snapshot_month,
         },
         "quality": dict(sorted(quality.items())),
         "brand_coverage": {
@@ -366,6 +401,11 @@ def aggregate(
                 scope_model_powertrain,
                 ("powertrain_group", "make", "model"),
                 group_fields=1,
+                count_field="vehicle_count",
+            ),
+            "scope_vehicle_age": _records(
+                scope_vehicle_age,
+                ("approximate_current_age",),
                 count_field="vehicle_count",
             ),
             "monthly_brand_country": _records(
