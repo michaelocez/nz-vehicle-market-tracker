@@ -16,6 +16,7 @@ type ScopeMakePowertrainRecord = { powertrain_group: string; make: string; brand
 type ScopeModelPowertrainRecord = { powertrain_group: string; make: string; model: string; vehicle_count: number; rank: number };
 type CountryRecord = CountRecord & { previous_country: string };
 type AgeRecord = CountRecord & { approximate_import_age: number };
+type FleetAgeRecord = { approximate_current_age: number; vehicle_count: number };
 type DataFile<T> = { contract_version: string; snapshot_month: string; records: T[] };
 type Manifest = {
   contract: { version: string };
@@ -37,6 +38,7 @@ type DashboardData = {
   scopeModelPowertrains: DataFile<ScopeModelPowertrainRecord>;
   countries: DataFile<CountryRecord>;
   ages: DataFile<AgeRecord>;
+  fleetAges: DataFile<FleetAgeRecord>;
 };
 
 const number = new Intl.NumberFormat("en-NZ");
@@ -130,6 +132,7 @@ export default function Home() {
   const [countryView, setCountryView] = useState<VehicleView>("latest");
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
+  const [activeFleetAge, setActiveFleetAge] = useState<number | null>(null);
 
   useEffect(() => {
     const files = [
@@ -144,6 +147,7 @@ export default function Home() {
       "scope_model.json",
       "scope_make_powertrain.json",
       "scope_model_powertrain.json",
+      "scope_vehicle_age.json",
       "monthly_previous_country.json",
       "monthly_import_age.json",
     ];
@@ -151,8 +155,8 @@ export default function Home() {
       if (!response.ok) throw new Error(file);
       return response.json();
     })))
-      .then(([manifest, summary, powertrain, makes, models, makePowertrains, modelPowertrains, scopeMakes, scopeModels, scopeMakePowertrains, scopeModelPowertrains, countries, ages]) => {
-        setData({ manifest, summary, powertrain, makes, models, makePowertrains, modelPowertrains, scopeMakes, scopeModels, scopeMakePowertrains, scopeModelPowertrains, countries, ages });
+      .then(([manifest, summary, powertrain, makes, models, makePowertrains, modelPowertrains, scopeMakes, scopeModels, scopeMakePowertrains, scopeModelPowertrains, fleetAges, countries, ages]) => {
+        setData({ manifest, summary, powertrain, makes, models, makePowertrains, modelPowertrains, scopeMakes, scopeModels, scopeMakePowertrains, scopeModelPowertrains, fleetAges, countries, ages });
       })
       .catch(() => setError(true));
   }, []);
@@ -328,6 +332,42 @@ export default function Home() {
   const countryViewLabel = countryView === "latest"
     ? prettyMonth(view.latest).toUpperCase()
     : "CURRENT FLEET · 2007+";
+  const fleetAgeTotal = data.fleetAges.records.reduce((sum, row) => sum + row.vehicle_count, 0);
+  const fleetAgeMean = fleetAgeTotal
+    ? data.fleetAges.records.reduce(
+      (sum, row) => sum + row.approximate_current_age * row.vehicle_count,
+      0,
+    ) / fleetAgeTotal
+    : 0;
+  const fleetAgeMedianThreshold = fleetAgeTotal / 2;
+  let fleetAgeCumulative = 0;
+  const fleetAgeMedian = [...data.fleetAges.records]
+    .sort((a, b) => a.approximate_current_age - b.approximate_current_age)
+    .find((row) => {
+      fleetAgeCumulative += row.vehicle_count;
+      return fleetAgeCumulative >= fleetAgeMedianThreshold;
+    })?.approximate_current_age ?? 0;
+  const fleetAgeMode = data.fleetAges.records.reduce(
+    (mostCommon, row) => row.vehicle_count > mostCommon.vehicle_count ? row : mostCommon,
+    { approximate_current_age: 0, vehicle_count: 0 },
+  );
+  const fleetSnapshotYear = Number(view.latest.slice(0, 4));
+  const fleetAgeBuckets = Array.from({ length: 32 }, (_, age) => ({
+    age,
+    label: age === 31 ? "31+" : String(age),
+    vehicleYearLabel: age === 31
+      ? `${fleetSnapshotYear - age} or earlier`
+      : String(fleetSnapshotYear - age),
+    value: data.fleetAges.records
+      .filter((row) => age === 31
+        ? row.approximate_current_age >= 31
+        : row.approximate_current_age === age)
+      .reduce((sum, row) => sum + row.vehicle_count, 0),
+  }));
+  const fleetAgeMax = Math.max(1, ...fleetAgeBuckets.map((row) => row.value));
+  const selectedFleetAge = fleetAgeBuckets.find(
+    (row) => row.age === (activeFleetAge ?? Math.min(fleetAgeMode.approximate_current_age, 31)),
+  ) ?? fleetAgeBuckets[0];
 
   function selectMarketYear(year: number) {
     const months = marketMonths.filter((month) => month.startsWith(`${year}-`));
@@ -563,6 +603,45 @@ export default function Home() {
               </ol>
             </article>
           </div>
+
+          <article className="panel fleet-age-panel">
+            <div className="fleet-age-heading">
+              <div>
+                <span className="panel-kicker">CURRENT FLEET AGE · DATA AS AT {prettyMonth(view.latest).toUpperCase()}</span>
+                <h3>How old are New Zealand&apos;s registered passenger cars?</h3>
+              </div>
+              <div className="fleet-age-stats">
+                <span><b>{fleetAgeMean.toFixed(1)}</b>average years</span>
+                <span><b>{fleetAgeMedian}</b>median years</span>
+                <span><b>{fleetAgeMode.approximate_current_age}</b>most common age</span>
+              </div>
+            </div>
+            <div className="fleet-age-readout" aria-live="polite">
+              <span>
+                {selectedFleetAge.label === "31+" ? "31 years and older" : `${selectedFleetAge.label} years old`}
+                {` · vehicle year ${selectedFleetAge.vehicleYearLabel}`}
+              </span>
+              <strong>{number.format(selectedFleetAge.value)} <small>registered passenger vehicles</small></strong>
+            </div>
+            <div className="fleet-age-chart" aria-label="Current registered passenger fleet by approximate age">
+              {fleetAgeBuckets.map((row) => (
+                <button
+                  type="button"
+                  key={row.age}
+                  className={selectedFleetAge.age === row.age ? "active" : ""}
+                  aria-label={`${row.label === "31+" ? "31 years and older" : `${row.label} years old`}, vehicle year ${row.vehicleYearLabel}: ${number.format(row.value)} registered passenger vehicles`}
+                  aria-pressed={selectedFleetAge.age === row.age}
+                  onMouseEnter={() => setActiveFleetAge(row.age)}
+                  onFocus={() => setActiveFleetAge(row.age)}
+                  onClick={() => setActiveFleetAge(row.age)}
+                >
+                  <i style={{ height: `${Math.max(2, (row.value / fleetAgeMax) * 100)}%` }} />
+                  <span>{row.age % 5 === 0 || row.age === 31 ? row.label : ""}</span>
+                </button>
+              ))}
+            </div>
+            <p className="chart-note">Approximate whole-year age = {view.latest.slice(0, 4)} snapshot year minus vehicle year. Includes the full ordinary passenger-vehicle snapshot with a usable vehicle year; 31+ is grouped for readability. Vehicle-year meanings before 2007 are less consistent.</p>
+          </article>
         </div>
       </section>
 

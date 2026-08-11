@@ -1,6 +1,6 @@
 # Production data contract
 
-Contract version: `1.2.0`
+Contract version: `1.3.0`
 
 ## Inclusion rules
 
@@ -14,6 +14,12 @@ A record enters the production aggregates when all these conditions hold:
 This includes ordinary passenger cars, forward-control passenger vehicles and
 passenger SUVs/off-road vehicles. It excludes motorcycles, goods vehicles,
 buses, trailers, caravans, ATVs, tractors and special-purpose machinery.
+
+The current-fleet age aggregate is the one exception to rule 3. It includes all
+ordinary passenger rows in the snapshot with a usable `VEHICLE_YEAR`, including
+vehicles first registered in New Zealand before 2007. This is necessary for the
+age profile to represent the current registered passenger fleet rather than
+only the project's 2007+ market-entry analysis window.
 
 Rows with `VEHICLE_YEAR < 2007` remain in registration, import-status,
 make/model, brand-country, previous-country and powertrain counts. They are
@@ -38,6 +44,7 @@ Every file contains `contract_version`, `snapshot_month`, and `records`.
 | `scope_model.json` | import status x make/model across the full 2007+ scope |
 | `scope_make_powertrain.json` | powertrain x leading make/brand/country across the 2007+ scope |
 | `scope_model_powertrain.json` | powertrain x leading make/model across the 2007+ scope |
+| `scope_vehicle_age.json` | approximate current age across the full passenger-vehicle snapshot |
 | `monthly_brand_country.json` | month x import status x marque-origin country |
 | `monthly_previous_country.json` | month x previous country, used imports only |
 | `monthly_vehicle_year.json` | month x import status x vehicle year x comparability |
@@ -90,6 +97,22 @@ FIRST_NZ_REGISTRATION_YEAR - VEHICLE_YEAR
 
 It is emitted only for used imports with `VEHICLE_YEAR >= 2007` and a valid age
 between 0 and 100 inclusive.
+
+`approximate_current_age` is:
+
+```text
+snapshot year - VEHICLE_YEAR
+```
+
+The snapshot year comes from the dated CSV filename inside the NZTA ZIP, so a
+July 2026 snapshot uses 2026 regardless of when the website is viewed. Ages from
+0 to 150 inclusive are retained. Missing, invalid, future and implausibly old
+vehicle years are excluded and counted in the manifest's quality fields.
+
+This is an approximate age in whole years because `VEHICLE_YEAR` has no month.
+NZTA also notes that before 2007 this field may mean manufacture year, model
+year, or first-registration year; from 2007 it means first registration in New
+Zealand or overseas. The chart must therefore not imply exact build dates.
 
 ## Brand country
 

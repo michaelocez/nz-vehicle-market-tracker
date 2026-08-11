@@ -78,6 +78,7 @@ def test_production_scope_and_age_boundary(tmp_path: Path) -> None:
     assert result["quality"]["included_rows"] == 3
     assert result["quality"]["non_passenger_rows"] == 2
     assert result["quality"]["before_start_month_rows"] == 1
+    assert result["quality"]["current_fleet_age_rows"] == 4
     assert sum(row["registration_count"] for row in result["datasets"]["monthly_summary"]) == 3
     assert sum(row["registration_count"] for row in result["datasets"]["monthly_import_age"]) == 1
     assert (
@@ -100,6 +101,40 @@ def test_production_scope_and_age_boundary(tmp_path: Path) -> None:
         row["vehicle_year"] == 2005 and row["age_comparable"] is False
         for row in result["datasets"]["monthly_vehicle_year"]
     )
+    assert result["datasets"]["scope_vehicle_age"] == [
+        {"approximate_current_age": 0, "vehicle_count": 1},
+        {"approximate_current_age": 8, "vehicle_count": 2},
+        {"approximate_current_age": 21, "vehicle_count": 1},
+    ]
+
+
+def test_current_fleet_age_excludes_unusable_vehicle_years(tmp_path: Path) -> None:
+    source = tmp_path / "fleet.zip"
+    _write_zip(
+        source,
+        [
+            _row(VEHICLE_YEAR=""),
+            _row(VEHICLE_YEAR="not-a-year"),
+            _row(VEHICLE_YEAR="2027"),
+            _row(VEHICLE_YEAR="1800"),
+        ],
+    )
+
+    result = aggregate(
+        source,
+        BrandReference({"TOYOTA": BrandInfo("Toyota", "Japan")}),
+    )
+
+    assert result["datasets"]["scope_vehicle_age"] == []
+    assert result["quality"]["current_fleet_age_rows"] == 0
+    assert (
+        result["quality"][
+            "excluded_current_fleet_age_missing_or_invalid_vehicle_year_rows"
+        ]
+        == 2
+    )
+    assert result["quality"]["excluded_current_fleet_age_future_vehicle_year_rows"] == 1
+    assert result["quality"]["excluded_current_fleet_age_implausible_vehicle_year_rows"] == 1
 
 
 def test_writes_checksummed_dimension_files(tmp_path: Path) -> None:
@@ -114,7 +149,8 @@ def test_writes_checksummed_dimension_files(tmp_path: Path) -> None:
     manifest = write_outputs(result, output)
 
     assert (output / "manifest.json").is_file()
-    assert len(manifest["files"]) == 14
+    assert len(manifest["files"]) == 15
+    assert (output / "scope_vehicle_age.json").is_file()
     monthly_summary = json.loads((output / "monthly_summary.json").read_text())
     assert monthly_summary["contract_version"] == DATA_CONTRACT_VERSION
     assert monthly_summary["snapshot_month"] == "2026-06"

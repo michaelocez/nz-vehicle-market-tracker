@@ -17,6 +17,7 @@ const files = [
   "scope_model.json",
   "scope_make_powertrain.json",
   "scope_model_powertrain.json",
+  "scope_vehicle_age.json",
   "monthly_previous_country.json",
   "monthly_import_age.json",
 ];

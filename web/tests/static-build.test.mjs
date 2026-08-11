@@ -28,6 +28,7 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /monthly_model_powertrain\.json/);
   assert.match(app, /scope_make_powertrain\.json/);
   assert.match(app, /scope_model_powertrain\.json/);
+  assert.match(app, /scope_vehicle_age\.json/);
   assert.match(app, /htmlFor="make-select"/);
   assert.match(app, /<optgroup label="Recognised makes">/);
   assert.match(app, /<optgroup label="Other \/ unmapped source makes">/);
@@ -56,6 +57,14 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /aria-pressed=\{countryView === "snapshot"\}/);
   assert.match(app, /setCountryView/);
   assert.match(app, /CURRENT FLEET · 2007\+/);
+  assert.match(app, /className="panel fleet-age-panel"/);
+  assert.match(app, /CURRENT FLEET AGE · DATA AS AT/);
+  assert.match(app, /How old are New Zealand&apos;s registered passenger cars\?/);
+  assert.match(app, /approximate_current_age/);
+  assert.match(app, /vehicleYearLabel/);
+  assert.match(app, /vehicle year \$\{selectedFleetAge\.vehicleYearLabel\}/);
+  assert.match(app, /aria-label="Current registered passenger fleet by approximate age"/);
+  assert.match(app, /onMouseEnter=\{\(\) => setActiveFleetAge\(row\.age\)\}/);
   assert.doesNotMatch(app, /setSelectedCountryMonth/);
   assert.doesNotMatch(styles, /\.powertrain-panel \{ grid-row: span 2/);
   assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
@@ -73,7 +82,7 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
 });
 
 test("synced data matches the approved production snapshot", async () => {
-  const [manifest, summary, scopeMakes, scopeModels, monthlyMakePowertrains, monthlyModelPowertrains, scopeMakePowertrains, scopeModelPowertrains] = await Promise.all([
+  const [manifest, summary, scopeMakes, scopeModels, monthlyMakePowertrains, monthlyModelPowertrains, scopeMakePowertrains, scopeModelPowertrains, fleetAges] = await Promise.all([
     readFile(new URL("../public/data/manifest.json", import.meta.url), "utf8").then(JSON.parse),
     readFile(new URL("../public/data/monthly_summary.json", import.meta.url), "utf8").then(JSON.parse),
     readFile(new URL("../public/data/scope_make.json", import.meta.url), "utf8").then(JSON.parse),
@@ -82,17 +91,19 @@ test("synced data matches the approved production snapshot", async () => {
     readFile(new URL("../public/data/monthly_model_powertrain.json", import.meta.url), "utf8").then(JSON.parse),
     readFile(new URL("../public/data/scope_make_powertrain.json", import.meta.url), "utf8").then(JSON.parse),
     readFile(new URL("../public/data/scope_model_powertrain.json", import.meta.url), "utf8").then(JSON.parse),
+    readFile(new URL("../public/data/scope_vehicle_age.json", import.meta.url), "utf8").then(JSON.parse),
   ]);
 
   assert.equal(manifest.contract.scope.vehicle_type, "PASSENGER CAR/VAN");
   assert.deepEqual(manifest.contract.scope.classes, ["MA", "MB", "MC"]);
-  for (const dataset of [summary, scopeMakes, scopeModels, monthlyMakePowertrains, monthlyModelPowertrains, scopeMakePowertrains, scopeModelPowertrains]) {
+  for (const dataset of [summary, scopeMakes, scopeModels, monthlyMakePowertrains, monthlyModelPowertrains, scopeMakePowertrains, scopeModelPowertrains, fleetAges]) {
     assert.equal(dataset.contract_version, manifest.contract.version);
   }
   assert.equal(
     summary.snapshot_month,
     summary.records.reduce((latest, row) => row.registration_month > latest ? row.registration_month : latest, ""),
   );
+  assert.equal(fleetAges.snapshot_month, summary.snapshot_month);
 
   const latest = Object.fromEntries(
     summary.records
@@ -134,6 +145,15 @@ test("synced data matches the approved production snapshot", async () => {
     assert.deepEqual([...new Set(dataset.records.map((row) => row.powertrain_group))].sort(), expectedPowertrains);
     assert.ok(dataset.records.every((row) => row.vehicle_count > 0));
   }
+  assert.equal(
+    fleetAges.records.reduce((sum, row) => sum + row.vehicle_count, 0),
+    manifest.quality.current_fleet_age_rows,
+  );
+  assert.ok(fleetAges.records.every((row) => row.approximate_current_age >= 0));
+  assert.deepEqual(
+    fleetAges.records.map((row) => row.approximate_current_age),
+    [...fleetAges.records.map((row) => row.approximate_current_age)].sort((a, b) => a - b),
+  );
 });
 
 test("Cloudflare and Sites scaffolding is absent", async () => {
