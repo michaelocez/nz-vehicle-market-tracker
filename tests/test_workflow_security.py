@@ -24,3 +24,27 @@ def test_workflows_pin_external_actions(workflow_path: Path) -> None:
 
     assert revisions, f"No external actions found in {workflow_path}"
     assert all(IMMUTABLE_COMMIT_SHA.fullmatch(revision) for revision in revisions)
+
+
+def test_codeql_scans_both_source_languages_with_least_privilege() -> None:
+    workflow = (WORKFLOW_DIRECTORY / "codeql.yml").read_text(encoding="utf-8")
+
+    assert "language: javascript-typescript" in workflow
+    assert "language: python" in workflow
+    assert workflow.count("build-mode: none") == 2
+    assert "security-events: write" in workflow
+    assert "contents: read" in workflow
+    assert 'paths-ignore:\n      - "data/**"' in workflow
+
+
+def test_dependabot_covers_each_dependency_ecosystem_monthly() -> None:
+    configuration = (REPOSITORY_ROOT / ".github" / "dependabot.yml").read_text(
+        encoding="utf-8"
+    )
+
+    for ecosystem in ("pip", "npm", "github-actions"):
+        assert f'package-ecosystem: "{ecosystem}"' in configuration
+
+    assert configuration.count('interval: "monthly"') == 3
+    assert 'directory: "/web"' in configuration
+    assert configuration.count('timezone: "Pacific/Auckland"') == 3
