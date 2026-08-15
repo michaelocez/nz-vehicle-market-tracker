@@ -9,7 +9,13 @@ test("build emits a GitHub Pages-compatible static entry point", async () => {
   assert.match(html, /<div id="root"><\/div>/i);
   assert.match(html, /(?:src|href)="\.\/assets\//i);
   assert.match(html, /rel="icon"[^>]+href="\.\/favicon\.png"/i);
+  assert.match(html, /rel="canonical" href="https:\/\/michaelocez\.github\.io\/nz-vehicle-market-tracker\/"/i);
+  assert.match(html, /property="og:image" content="https:\/\/michaelocez\.github\.io\/nz-vehicle-market-tracker\/social-preview\.png"/i);
+  assert.match(html, /name="twitter:card" content="summary_large_image"/i);
   await access(new URL("../dist/favicon.png", import.meta.url));
+  const socialPreview = await readFile(new URL("../dist/social-preview.png", import.meta.url));
+  assert.equal(socialPreview.readUInt32BE(16), 1200);
+  assert.equal(socialPreview.readUInt32BE(20), 630);
   assert.doesNotMatch(html, /_next|_vinext|cloudflare/i);
 });
 
@@ -81,8 +87,12 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
   assert.doesNotMatch(app, /year-to-date through June/);
   assert.match(app, /data\.manifest\.contract\.version/);
+  assert.match(app, /data\.manifest\.generated_at_utc/);
+  assert.match(app, /timeZone: "Pacific\/Auckland"/);
+  assert.match(app, /Aggregates generated <time/);
   assert.doesNotMatch(app, /<b>v\d+\.\d+(?:\.\d+)?<\/b> data contract/);
   assert.match(app, /href="https:\/\/www\.nzta\.govt\.nz\/resources\/new-zealand-motor-vehicle-register-statistics\/new-zealand-vehicle-fleet-open-data-sets"/);
+  assert.match(app, /href="https:\/\/github\.com\/michaelocez\/nz-vehicle-market-tracker"/);
   assert.doesNotMatch(styles, /--brand-mark-bg|--brand-mark-border/);
   assert.match(styles, /color-scheme:\s*dark/);
   assert.doesNotMatch(app, /localStorage|theme-toggle|Switch to.*mode/);
@@ -106,6 +116,7 @@ test("synced data matches the approved production snapshot", async () => {
 
   assert.equal(manifest.contract.scope.vehicle_type, "PASSENGER CAR/VAN");
   assert.deepEqual(manifest.contract.scope.classes, ["MA", "MB", "MC"]);
+  assert.ok(!Number.isNaN(Date.parse(manifest.generated_at_utc)));
   for (const dataset of [summary, scopeMakes, scopeModels, monthlyMakePowertrains, monthlyModelPowertrains, scopeMakePowertrains, scopeModelPowertrains, fleetAges]) {
     assert.equal(dataset.contract_version, manifest.contract.version);
   }

@@ -22,6 +22,7 @@ type DataFile<T> = { contract_version: string; snapshot_month: string; records: 
 type Manifest = {
   contract: { version: string };
   source: { snapshot_month: string };
+  generated_at_utc: string;
   quality: { included_rows: number; mapped_brand_rows: number };
   brand_coverage: { mapped_share: number };
 };
@@ -51,6 +52,12 @@ const fleetAgeLabel = (label: string) => {
 const compact = new Intl.NumberFormat("en-NZ", { notation: "compact", maximumFractionDigits: 1 });
 const monthLabel = new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric", timeZone: "UTC" });
 const monthName = new Intl.DateTimeFormat("en-NZ", { month: "long", timeZone: "UTC" });
+const generatedDate = new Intl.DateTimeFormat("en-NZ", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "Pacific/Auckland",
+});
 
 const powertrainLabel: Record<string, string> = {
   bev: "Battery electric",
@@ -79,6 +86,11 @@ function prettyMonth(value: string) {
 
 function prettyMonthName(value: string) {
   return monthName.format(new Date(`${value}-01T00:00:00Z`));
+}
+
+function prettyGeneratedDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? "Unknown" : generatedDate.format(date);
 }
 
 function percent(value: number) {
@@ -899,7 +911,12 @@ export default function Home() {
       <footer className="footer wrap">
         <span>NZ Vehicle Market Tracker</span>
         <p>
-          Source: <a href="https://www.nzta.govt.nz/resources/new-zealand-motor-vehicle-register-statistics/new-zealand-vehicle-fleet-open-data-sets" target="_blank" rel="noreferrer">NZTA vehicle fleet open data ↗</a> · Current-fleet snapshot
+          <span>
+            Source: <a href="https://www.nzta.govt.nz/resources/new-zealand-motor-vehicle-register-statistics/new-zealand-vehicle-fleet-open-data-sets" target="_blank" rel="noreferrer">NZTA vehicle fleet open data ↗</a> · <a href="https://github.com/michaelocez/nz-vehicle-market-tracker" target="_blank" rel="noreferrer">GitHub repository ↗</a>
+          </span>
+          <span>
+            Current-fleet snapshot · Aggregates generated <time dateTime={data.manifest.generated_at_utc}>{prettyGeneratedDate(data.manifest.generated_at_utc)}</time>
+          </span>
         </p>
       </footer>
     </main>
