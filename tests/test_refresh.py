@@ -146,8 +146,13 @@ def test_ignores_generation_time_when_dataset_checksums_are_unchanged(tmp_path: 
 
 def test_refresh_workflow_uses_the_direct_official_zip_url() -> None:
     workflow = Path(".github/workflows/refresh-data.yml").read_text(encoding="utf-8")
+    workflow_lines = {line.strip() for line in workflow.splitlines()}
 
-    assert "wksprdgisopendata.blob.core.windows.net" in workflow
+    assert (
+        "NZTA_ALL_YEARS_ZIP_URL: ${{ vars.NZTA_ALL_YEARS_ZIP_URL || "
+        "'https://wksprdgisopendata.blob.core.windows.net/"
+        "motorvehicleregister/Fleet-data-all-vehicle-years.zip' }}"
+    ) in workflow_lines
     assert '--url "$NZTA_ALL_YEARS_ZIP_URL"' in workflow
     assert "vars.NZTA_ALL_YEARS_ZIP_URL" in workflow
     assert 'cron: "17 5 * * *"' in workflow
