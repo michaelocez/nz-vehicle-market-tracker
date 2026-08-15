@@ -3,6 +3,7 @@
 [![Deploy GitHub Pages](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/deploy-pages.yml)
 [![Refresh NZTA aggregates](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/refresh-data.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/refresh-data.yml)
 [![Pull request validation](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/pull-request.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/pull-request.yml)
+[![CodeQL](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/codeql.yml/badge.svg)](https://github.com/michaelocez/nz-vehicle-market-tracker/actions/workflows/codeql.yml)
 
 An interactive data product exploring how New Zealand's passenger-vehicle fleet
 is changing. It turns NZTA's multi-gigabyte current-fleet release into a small,
@@ -47,7 +48,7 @@ database, and the raw vehicle-level dataset is never deployed.
 - **Data pipeline:** Python 3, streaming CSV/ZIP processing and checksummed JSON.
 - **Frontend:** React 19, TypeScript and Vite.
 - **Quality:** pytest, Ruff, TypeScript checks and Node test assertions.
-- **Automation:** GitHub Actions and GitHub Pages.
+- **Automation:** GitHub Actions, CodeQL, Dependabot and GitHub Pages.
 - **Data source:** NZTA New Zealand Vehicle Fleet Open Data.
 
 ## Automated data refresh
@@ -73,6 +74,15 @@ named `NZTA_ALL_YEARS_ZIP_URL`.
 The Pages workflow tests and builds `web/dist` whenever `main` changes. A
 successful data refresh calls the same deployment workflow, publishing the new
 aggregates without manual intervention.
+
+## Automated security maintenance
+
+CodeQL analyzes the Python and JavaScript/TypeScript source on relevant pushes
+and pull requests, as well as on a weekly schedule. Data-only refresh commits
+are skipped by the event triggers because they do not change executable source;
+the scheduled scan still reviews the repository regularly. Dependabot groups
+Python, frontend and GitHub Actions updates into monthly pull requests so that
+dependency changes remain reviewable without creating excessive PR noise.
 
 ## Run the dashboard locally
 
