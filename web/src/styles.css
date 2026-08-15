@@ -229,7 +229,8 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .method-stats b { display: block; font-size: 24px; letter-spacing: -.04em; margin-bottom: 3px; text-transform: none; }
 .footer { min-height: 112px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
 .footer > span { font-weight: 800; }
-.footer p { color: var(--ink-soft); }
+.footer p { color: var(--ink-soft); line-height: 1.7; text-align: right; }
+.footer p > span { display: block; }
 .footer a { color: var(--ink); border-bottom: 1px solid var(--line-strong); }
 .footer a:hover { color: var(--primary-hover); border-color: var(--primary-hover); }
 
@@ -298,7 +299,7 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
   .explorer-breakdown { grid-template-columns: 1fr 1fr; }
   .method-stats { grid-template-columns: 1fr 1fr; }
   .footer { align-items: start; flex-direction: column; justify-content: center; gap: 8px; }
-  .footer p { margin: 0; }
+  .footer p { margin: 0; text-align: left; }
 }
 
 @media (prefers-reduced-motion: reduce) {
