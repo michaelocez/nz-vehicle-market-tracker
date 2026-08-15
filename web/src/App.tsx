@@ -17,6 +17,7 @@ type ScopeModelPowertrainRecord = { powertrain_group: string; make: string; mode
 type CountryRecord = CountRecord & { previous_country: string };
 type AgeRecord = CountRecord & { approximate_import_age: number };
 type FleetAgeRecord = { approximate_current_age: number; vehicle_count: number };
+type MonthChange = { delta: number; rate: number | null };
 type DataFile<T> = { contract_version: string; snapshot_month: string; records: T[] };
 type Manifest = {
   contract: { version: string };
@@ -82,6 +83,59 @@ function prettyMonthName(value: string) {
 
 function percent(value: number) {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+function monthChange(current: number, previous: number | undefined): MonthChange | null {
+  if (previous === undefined) return null;
+  return {
+    delta: current - previous,
+    rate: previous === 0 ? null : (current - previous) / previous,
+  };
+}
+
+function signedNumber(value: number) {
+  if (value === 0) return "No change";
+  return `${value > 0 ? "+" : "−"}${number.format(Math.abs(value))}`;
+}
+
+function signedPercent(change: MonthChange) {
+  if (change.delta === 0) return "No change";
+  if (change.rate === null) return signedNumber(change.delta);
+  return `${change.rate > 0 ? "+" : "−"}${percent(Math.abs(change.rate))}`;
+}
+
+function changeTone(change: MonthChange) {
+  if (change.delta === 0) return "steady";
+  return change.delta > 0 ? "up" : "down";
+}
+
+function MonthChangeIndicator({
+  change,
+  previousMonth,
+  detailed = false,
+}: {
+  change: MonthChange | null;
+  previousMonth: string | null;
+  detailed?: boolean;
+}) {
+  if (!change || !previousMonth) return null;
+  const comparisonMonth = prettyMonthName(previousMonth);
+  const accessibleComparison = change.delta === 0
+    ? `the same number of vehicles as ${prettyMonth(previousMonth)}`
+    : `${number.format(Math.abs(change.delta))} ${change.delta > 0 ? "more" : "fewer"} vehicles than ${prettyMonth(previousMonth)}`;
+  const detailedComparison = change.delta === 0
+    ? `Same count as ${comparisonMonth}`
+    : `${signedNumber(change.delta)} vehicles vs ${comparisonMonth}`;
+
+  return (
+    <span
+      className={`month-change ${changeTone(change)}${detailed ? " detailed" : ""}`}
+      aria-label={`${signedPercent(change)}, ${accessibleComparison}`}
+    >
+      <b>{signedPercent(change)}</b>
+      <small>{detailed ? detailedComparison : `vs ${comparisonMonth}`}</small>
+    </span>
+  );
 }
 
 function makeOptionLabel(row: ScopeMakeRecord) {
@@ -169,11 +223,20 @@ export default function Home() {
   const view = useMemo(() => {
     if (!data) return null;
     const latest = data.summary.snapshot_month;
+    const availableMonths = [...new Set(data.summary.records.map((row) => row.registration_month))].sort();
+    const previousMonth = availableMonths.filter((month) => month < latest).at(-1) ?? null;
     const latestSummary = data.summary.records.filter((row) => row.registration_month === latest);
+    const previousSummary = previousMonth
+      ? data.summary.records.filter((row) => row.registration_month === previousMonth)
+      : [];
     const nzNew = latestSummary.find((row) => row.import_status_group === "nz_new")?.registration_count ?? 0;
     const used = latestSummary.find((row) => row.import_status_group === "used_import")?.registration_count ?? 0;
     const other = latestSummary.find((row) => row.import_status_group === "other_or_unknown")?.registration_count ?? 0;
     const latestTotal = nzNew + used + other;
+    const previousTotal = previousMonth
+      ? previousSummary.reduce((sum, row) => sum + row.registration_count, 0)
+      : undefined;
+    const latestTotalChange = monthChange(latestTotal, previousTotal);
     const annual = annualise(data.summary.records, range);
     const annualMax = Math.max(...annual.flatMap((row) => [row.nz_new, row.used_import]));
     const displayedPowertrain = vehicleView === "latest"
@@ -185,6 +248,18 @@ export default function Home() {
     }, new Map<string, number>())]
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
+    const previousPowertrainTotals = previousMonth
+      ? data.powertrain.records
+        .filter((row) => row.registration_month === previousMonth)
+        .reduce((map, row) => {
+          map.set(row.powertrain_group, (map.get(row.powertrain_group) ?? 0) + row.registration_count);
+          return map;
+        }, new Map<string, number>())
+      : new Map<string, number>();
+    const powertrainChanges = new Map(powertrains.map((row) => [
+      row.name,
+      vehicleView === "latest" ? monthChange(row.value, previousPowertrainTotals.get(row.name)) : null,
+    ]));
     const arrivalMix = arrivalPowertrains.map((name) => {
       const records = displayedPowertrain.filter((row) => row.powertrain_group === name);
       const countFor = (status: string) => records
@@ -233,6 +308,28 @@ export default function Home() {
           : (a as ScopeModelPowertrainRecord).rank - (b as ScopeModelPowertrainRecord).rank)
         .slice(0, 5)
         .map((row, index) => ({ ...row, rank: index + 1, registration_count: row.vehicle_count }));
+    const previousMakeRecords = !previousMonth || vehicleView !== "latest"
+      ? []
+      : (leaderboardPowertrain === "all" ? data.makes.records : data.makePowertrains.records)
+        .filter((row) => row.registration_month === previousMonth
+          && (leaderboardPowertrain === "all"
+            ? (row as MakeRecord).import_status_group === "all"
+            : (row as MakePowertrainRecord).powertrain_group === leaderboardPowertrain));
+    const makeChanges = new Map(topMakes.map((row) => {
+      const previous = previousMakeRecords.find((candidate) => candidate.make === row.make);
+      return [row.make, monthChange(row.registration_count, previous?.registration_count)];
+    }));
+    const previousModelRecords = !previousMonth || vehicleView !== "latest"
+      ? []
+      : (leaderboardPowertrain === "all" ? data.models.records : data.modelPowertrains.records)
+        .filter((row) => row.registration_month === previousMonth
+          && (leaderboardPowertrain === "all"
+            ? (row as ModelRecord).import_status_group === "all"
+            : (row as ModelPowertrainRecord).powertrain_group === leaderboardPowertrain));
+    const modelChanges = new Map(topModels.map((row) => {
+      const previous = previousModelRecords.find((candidate) => candidate.make === row.make && candidate.model === row.model);
+      return [`${row.make}\u0000${row.model}`, monthChange(row.registration_count, previous?.registration_count)];
+    }));
     const latestAges = data.ages.records.filter((row) => row.registration_month === latest);
     const ageBuckets = [
       { label: "0–2 years", min: 0, max: 2 },
@@ -258,9 +355,10 @@ export default function Home() {
       ? vehicleLabel
       : `${leaderboardPowertrainLabel[leaderboardPowertrain].toUpperCase()} · ${vehicleLabel}`;
     return {
-      latest, nzNew, used, latestTotal, annual, annualMax, powertrains, powertrainMax, arrivalMix,
+      latest, previousMonth, nzNew, used, latestTotal, latestTotalChange, annual, annualMax,
+      powertrains, powertrainChanges, powertrainMax, arrivalMix,
       topMakes, topModels, ageBuckets, ageMax,
-      medianAge: weightedMedian(latestAges), electric, vehicleTotal, vehicleLabel, rankingContext,
+      makeChanges, modelChanges, medianAge: weightedMedian(latestAges), electric, vehicleTotal, vehicleLabel, rankingContext,
     };
   }, [data, range, vehicleView, leaderboardPowertrain]);
 
@@ -412,6 +510,7 @@ export default function Home() {
             <span className="stat-kicker">{prettyMonth(view.latest)}</span>
             <strong>{number.format(view.latestTotal)}</strong>
             <span>passenger vehicles entered the NZ fleet</span>
+            <MonthChangeIndicator change={view.latestTotalChange} previousMonth={view.previousMonth} detailed />
             <div className="split-meter" aria-hidden="true">
               <i style={{ width: `${(view.nzNew / view.latestTotal) * 100}%` }} />
             </div>
@@ -557,6 +656,11 @@ export default function Home() {
               </div>
             </div>
           </div>
+          {vehicleView === "latest" && view.previousMonth && (
+            <p className="comparison-context">
+              Changes compare with {prettyMonth(view.previousMonth)}. A ranking change is omitted when a make or model was outside that month&apos;s published top 25.
+            </p>
+          )}
 
           <div className="dashboard-grid">
             <article className="panel powertrain-panel">
@@ -564,7 +668,13 @@ export default function Home() {
               <div className="bar-list">
                 {view.powertrains.slice(0, 6).map((row) => (
                   <div className="bar-row" key={row.name}>
-                    <div><span>{powertrainLabel[row.name] ?? row.name}</span><b>{number.format(row.value)}</b></div>
+                    <div>
+                      <span>{powertrainLabel[row.name] ?? row.name}</span>
+                      <span className="bar-value">
+                        <b>{number.format(row.value)}</b>
+                        {vehicleView === "latest" && <MonthChangeIndicator change={view.powertrainChanges.get(row.name) ?? null} previousMonth={view.previousMonth} />}
+                      </span>
+                    </div>
                     <i><em style={{ width: `${(row.value / view.powertrainMax) * 100}%` }} /></i>
                   </div>
                 ))}
@@ -575,7 +685,14 @@ export default function Home() {
               <span className="panel-kicker">TOP MAKES · {view.rankingContext}</span>
               <ol>
                 {view.topMakes.map((row) => (
-                  <li key={row.make}><span className="rank">{String(row.rank).padStart(2, "0")}</span><div><strong>{row.brand}</strong><small>{row.brand_country}</small></div><b>{number.format(row.registration_count)}</b></li>
+                  <li key={row.make}>
+                    <span className="rank">{String(row.rank).padStart(2, "0")}</span>
+                    <div><strong>{row.brand}</strong><small>{row.brand_country}</small></div>
+                    <span className="ranking-value">
+                      <b>{number.format(row.registration_count)}</b>
+                      {vehicleView === "latest" && <MonthChangeIndicator change={view.makeChanges.get(row.make) ?? null} previousMonth={view.previousMonth} />}
+                    </span>
+                  </li>
                 ))}
               </ol>
             </article>
@@ -603,7 +720,14 @@ export default function Home() {
               <span className="panel-kicker">TOP MODELS · {view.rankingContext}</span>
               <ol>
                 {view.topModels.map((row) => (
-                  <li key={`${row.make}-${row.model}`}><span className="rank">{String(row.rank).padStart(2, "0")}</span><div><strong>{row.model}</strong><small>{row.make}</small></div><b>{number.format(row.registration_count)}</b></li>
+                  <li key={`${row.make}-${row.model}`}>
+                    <span className="rank">{String(row.rank).padStart(2, "0")}</span>
+                    <div><strong>{row.model}</strong><small>{row.make}</small></div>
+                    <span className="ranking-value">
+                      <b>{number.format(row.registration_count)}</b>
+                      {vehicleView === "latest" && <MonthChangeIndicator change={view.modelChanges.get(`${row.make}\u0000${row.model}`) ?? null} previousMonth={view.previousMonth} />}
+                    </span>
+                  </li>
                 ))}
               </ol>
             </article>

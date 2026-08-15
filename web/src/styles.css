@@ -47,6 +47,13 @@ button { font: inherit; }
 .stat-kicker { color: var(--primary-hover); text-transform: uppercase; font-weight: 800; letter-spacing: .16em; font-size: 11px; }
 .hero-stat > strong { font-size: clamp(60px, 7vw, 88px); letter-spacing: -.07em; line-height: 1; margin: 18px 0 8px; }
 .hero-stat > span:not(.stat-kicker) { color: #b7c7c4; font-size: 14px; line-height: 1.5; }
+.month-change { display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; color: var(--ink-soft); font-size: 9px; font-weight: 700; white-space: nowrap; }
+.month-change b { color: var(--ink-soft); font-size: 10px; }
+.month-change.up b { color: var(--series-new); }
+.month-change.down b { color: var(--series-used); }
+.month-change small { color: inherit; font-size: inherit; margin: 0; }
+.hero-stat > .month-change.detailed { align-items: baseline; justify-content: flex-start; margin-top: 12px; color: #9fb2af; font-size: 11px; }
+.hero-stat > .month-change.detailed b { font-size: 13px; }
 .split-meter { height: 7px; background: var(--series-used); margin-top: 38px; }
 .split-meter i { display: block; height: 100%; background: var(--series-new); }
 .split-labels { display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: #9fb2af; }
@@ -71,6 +78,7 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .ranking-filter { display: flex; align-items: center; gap: 12px; }
 .ranking-filter > span { color: var(--ink-soft); font-size: 11px; font-weight: 700; }
 .ranking-filter .range-control button { padding-inline: 12px; }
+.comparison-context { margin: -12px 0 24px 38px; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
 .chart-card, .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
 .market-card { padding: 34px 36px 24px; }
 .market-chart-toolbar { min-height: 58px; display: flex; justify-content: space-between; align-items: end; gap: 24px; }
@@ -122,7 +130,8 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .panel-heading > strong { font-size: 42px; letter-spacing: -.05em; text-align: right; color: var(--series-new); }
 .panel-heading > strong small { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); }
 .bar-list { margin-top: 48px; display: grid; gap: 24px; }
-.bar-row > div { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+.bar-row > div { display: flex; justify-content: space-between; align-items: end; gap: 20px; font-size: 13px; margin-bottom: 8px; }
+.bar-value { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .bar-row i { height: 9px; display: block; background: var(--track); }
 .bar-row em { height: 100%; display: block; background: var(--series-muted); }
 .bar-row:first-child em { background: var(--series-new); }
@@ -150,6 +159,8 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
 .ranking-panel li strong { font-size: 14px; }
 .ranking-panel li small { color: var(--ink-soft); font-size: 10px; margin-top: 2px; }
 .ranking-panel li > b { font-size: 13px; }
+.ranking-value { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.ranking-value > b { font-size: 13px; }
 .fleet-age-panel { margin-top: 20px; }
 .fleet-age-heading { display: flex; justify-content: space-between; align-items: start; gap: 42px; }
 .fleet-age-heading h3 { max-width: 650px; margin: 13px 0 0; font-size: 28px; line-height: 1.2; letter-spacing: -.6px; font-weight: 600; }
@@ -255,6 +266,7 @@ h2 { font-size: clamp(36px, 4vw, 56px); letter-spacing: -1.8px; line-height: 1.1
   .vehicle-view-control button { padding-inline: 13px; }
   .section-lead { margin-left: 0; }
   .ranking-filter-row { align-items: start; flex-direction: column; margin-left: 0; }
+  .comparison-context { margin-left: 0; }
   .ranking-filter { align-items: start; flex-direction: column; width: 100%; }
   .ranking-filter .range-control { max-width: 100%; overflow-x: auto; }
   .ranking-filter .range-control button { flex: 0 0 auto; }
