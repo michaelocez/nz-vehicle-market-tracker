@@ -37,6 +37,15 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /aria-pressed=\{vehicleView === value\}/);
   assert.match(app, /Latest entries/);
   assert.match(app, /Current fleet/);
+  assert.match(app, /function monthChange\(current: number, previous: number \| undefined\)/);
+  assert.match(app, /className=\{`month-change \$\{changeTone\(change\)\}/);
+  assert.match(app, /Changes compare with \{prettyMonth\(view\.previousMonth\)\}/);
+  assert.match(app, /outside that month&apos;s published top 25/);
+  assert.match(app, /previousPowertrainTotals/);
+  assert.match(app, /previousMakeRecords/);
+  assert.match(app, /previousModelRecords/);
+  assert.match(styles, /\.month-change\.up b/);
+  assert.match(styles, /\.month-change\.down b/);
   assert.match(app, /aria-label="Leaderboard powertrain filter"/);
   assert.match(app, /PASSENGER VEHICLES ONLY · MA \/ MB \/ MC/);
   assert.match(app, /\["all", "combustion", "hybrid", "bev", "phev", "other"\]/);

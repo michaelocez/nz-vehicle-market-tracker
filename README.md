@@ -14,6 +14,7 @@ versioned set of aggregates and a responsive static dashboard.
 
 - NZ-new vehicles versus used imports entering the fleet over time.
 - The leading makes and models in the latest month and current scoped fleet.
+- Month-over-month movement in latest totals, powertrains, makes and models.
 - Powertrain-filtered make and model rankings for passenger vehicles.
 - Combustion, hybrid, battery-electric and plug-in-hybrid composition.
 - NZ-new versus used-import arrival channels within each major powertrain.
