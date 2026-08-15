@@ -2,6 +2,11 @@
 
 Source snapshot: `Fleet-30Jun2026.csv`
 
+> Historical milestone report. It records the first production aggregation in
+> June 2026 and is intentionally not rewritten after each release. For the
+> current dataset list and rules, see `docs/data-contract.md`; for current test
+> and automation instructions, see `README.md`.
+
 ## Result
 
 The production pipeline successfully streamed 5,899,091 source rows without

@@ -63,6 +63,7 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.match(app, /approximate_current_age/);
   assert.match(app, /vehicleYearLabel/);
   assert.match(app, /vehicle year \$\{selectedFleetAge\.vehicleYearLabel\}/);
+  assert.match(app, /label === "1" \? "1 year old"/);
   assert.match(app, /aria-label="Current registered passenger fleet by approximate age"/);
   assert.match(app, /onMouseEnter=\{\(\) => setActiveFleetAge\(row\.age\)\}/);
   assert.doesNotMatch(app, /setSelectedCountryMonth/);

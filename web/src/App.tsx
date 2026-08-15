@@ -42,6 +42,11 @@ type DashboardData = {
 };
 
 const number = new Intl.NumberFormat("en-NZ");
+
+const fleetAgeLabel = (label: string) => {
+  if (label === "31+") return "31 years and older";
+  return label === "1" ? "1 year old" : `${label} years old`;
+};
 const compact = new Intl.NumberFormat("en-NZ", { notation: "compact", maximumFractionDigits: 1 });
 const monthLabel = new Intl.DateTimeFormat("en-NZ", { month: "long", year: "numeric", timeZone: "UTC" });
 const monthName = new Intl.DateTimeFormat("en-NZ", { month: "long", timeZone: "UTC" });
@@ -618,7 +623,7 @@ export default function Home() {
             </div>
             <div className="fleet-age-readout" aria-live="polite">
               <span>
-                {selectedFleetAge.label === "31+" ? "31 years and older" : `${selectedFleetAge.label} years old`}
+                {fleetAgeLabel(selectedFleetAge.label)}
                 {` · vehicle year ${selectedFleetAge.vehicleYearLabel}`}
               </span>
               <strong>{number.format(selectedFleetAge.value)} <small>registered passenger vehicles</small></strong>
@@ -629,7 +634,7 @@ export default function Home() {
                   type="button"
                   key={row.age}
                   className={selectedFleetAge.age === row.age ? "active" : ""}
-                  aria-label={`${row.label === "31+" ? "31 years and older" : `${row.label} years old`}, vehicle year ${row.vehicleYearLabel}: ${number.format(row.value)} registered passenger vehicles`}
+                  aria-label={`${fleetAgeLabel(row.label)}, vehicle year ${row.vehicleYearLabel}: ${number.format(row.value)} registered passenger vehicles`}
                   aria-pressed={selectedFleetAge.age === row.age}
                   onMouseEnter={() => setActiveFleetAge(row.age)}
                   onFocus={() => setActiveFleetAge(row.age)}

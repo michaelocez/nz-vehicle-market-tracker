@@ -2,14 +2,45 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
 from nz_vehicle_market_tracker.refresh import promote_candidate
 
 
-def _write_snapshot(directory: Path, month: str, digest: str, generated_at: str) -> None:
+def _write_snapshot(
+    directory: Path,
+    month: str,
+    digest: str,
+    generated_at: str,
+    *,
+    records: list[dict[str, object]] | None = None,
+) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     dataset = directory / "monthly_summary.json"
-    dataset.write_text(json.dumps({"snapshot_month": month, "records": []}), encoding="utf-8")
+    dataset.write_text(
+        json.dumps(
+            {
+                "contract_version": "test",
+                "snapshot_month": month,
+                "records": records or [],
+            }
+        ),
+        encoding="utf-8",
+    )
     checksum = hashlib.sha256(dataset.read_bytes()).hexdigest()
+    scope_dataset = directory / "scope_make.json"
+    scope_records = [{"make": "TOYOTA", "vehicle_count": 100}]
+    scope_dataset.write_text(
+        json.dumps(
+            {
+                "contract_version": "test",
+                "snapshot_month": month,
+                "records": scope_records,
+            }
+        ),
+        encoding="utf-8",
+    )
+    scope_checksum = hashlib.sha256(scope_dataset.read_bytes()).hexdigest()
     (directory / "manifest.json").write_text(
         json.dumps(
             {
@@ -19,7 +50,11 @@ def _write_snapshot(directory: Path, month: str, digest: str, generated_at: str)
                     "monthly_summary": {
                         "path": "monthly_summary.json",
                         "sha256": checksum if digest == "valid" else digest,
-                    }
+                    },
+                    "scope_make": {
+                        "path": "scope_make.json",
+                        "sha256": scope_checksum,
+                    },
                 },
             }
         ),
@@ -31,14 +66,67 @@ def test_promotes_candidate_to_current_and_monthly_archive(tmp_path: Path) -> No
     candidate = tmp_path / "candidate"
     current = tmp_path / "current"
     archive_root = tmp_path / "archive"
-    _write_snapshot(candidate, "2026-06", "valid", "new")
+    _write_snapshot(
+        candidate,
+        "2026-06",
+        "valid",
+        "new",
+        records=[
+            {"registration_month": "2026-05", "registration_count": 10},
+            {"registration_month": "2026-06", "registration_count": 20},
+        ],
+    )
 
     changed, month = promote_candidate(candidate, current, archive_root)
 
     assert changed is True
     assert month == "2026-06"
     assert (current / "monthly_summary.json").is_file()
-    assert (archive_root / month / "manifest.json").is_file()
+    archive = archive_root / month
+    archive_manifest = json.loads((archive / "manifest.json").read_text())
+    archive_dataset = json.loads((archive / "monthly_summary.json").read_text())
+    archive_scope = json.loads((archive / "scope_make.json").read_text())
+    assert archive_manifest["archive"]["kind"] == "compact_snapshot"
+    assert archive_manifest["archive"]["monthly_dimensions"] == "snapshot_month_only"
+    assert set(archive_manifest["archive"]["source_files"]) == {
+        "monthly_summary",
+        "scope_make",
+    }
+    assert archive_dataset["records"] == [
+        {"registration_month": "2026-06", "registration_count": 20}
+    ]
+    assert archive_scope["records"] == [{"make": "TOYOTA", "vehicle_count": 100}]
+
+
+def test_compact_archive_prevents_repeat_publication(tmp_path: Path) -> None:
+    candidate = tmp_path / "candidate"
+    current = tmp_path / "current"
+    archive_root = tmp_path / "archive"
+    _write_snapshot(
+        candidate,
+        "2026-06",
+        "valid",
+        "new",
+        records=[{"registration_month": "2026-06", "registration_count": 20}],
+    )
+
+    assert promote_candidate(candidate, current, archive_root)[0] is True
+    assert promote_candidate(candidate, current, archive_root)[0] is False
+
+
+def test_rejects_archive_when_monthly_dataset_has_no_snapshot_rows(tmp_path: Path) -> None:
+    candidate = tmp_path / "candidate"
+    _write_snapshot(
+        candidate,
+        "2026-06",
+        "valid",
+        "new",
+        records=[{"registration_month": "2026-05", "registration_count": 10}],
+    )
+
+    with pytest.raises(ValueError, match="no rows for archive month"):
+        promote_candidate(candidate, tmp_path / "current", tmp_path / "archive")
+    assert not (tmp_path / "current").exists()
 
 
 def test_ignores_generation_time_when_dataset_checksums_are_unchanged(tmp_path: Path) -> None:
