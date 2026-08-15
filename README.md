@@ -19,6 +19,7 @@ versioned set of aggregates and a responsive static dashboard.
 - NZ-new versus used-import arrival channels within each major powertrain.
 - Previous registration countries for used imports.
 - Approximate import-age patterns for the comparable 2007+ cohort.
+- The approximate age distribution of the full current passenger-vehicle fleet.
 - Current fleet totals for a selected make or model.
 
 The dashboard describes vehicles as **first registered in New Zealand** or
@@ -57,11 +58,16 @@ into temporary runner storage, tested, rebuilt and published. The raw ZIP and
 fleet CSV are discarded with the runner, so no monthly maintenance or personal
 access token is required.
 
-Each changed snapshot updates `data/production/current/` and is retained under
-`data/production/archive/YYYY-MM/`. Dataset checksums prevent unnecessary
-commits when NZTA has not changed its release. If NZTA replaces the official
-direct download URL, the workflow can use a repository Actions variable named
-`NZTA_ALL_YEARS_ZIP_URL`.
+Each changed snapshot updates the complete dataset in `data/production/current/`.
+Future monthly archives under `data/production/archive/YYYY-MM/` are compact:
+they retain only that release month's rows from `monthly_*` dimensions, together
+with the complete snapshot-level `scope_*` totals, source metadata, quality
+metrics and checksums. June and July 2026 remain complete baseline checkpoints.
+This preserves reviewable monthly evidence without duplicating the entire
+2007-present history in every future archive. Dataset checksums prevent
+unnecessary commits when NZTA has not changed its release. If NZTA replaces the
+official direct download URL, the workflow can use a repository Actions variable
+named `NZTA_ALL_YEARS_ZIP_URL`.
 
 The Pages workflow tests and builds `web/dist` whenever `main` changes. A
 successful data refresh calls the same deployment workflow, publishing the new

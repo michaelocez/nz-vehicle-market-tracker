@@ -32,6 +32,14 @@ contribute to the age comparison.
 Every file contains `contract_version`, `snapshot_month`, and `records`.
 `manifest.json` provides record counts, byte sizes and SHA-256 hashes.
 
+The complete current release is stored in `data/production/current/`. Compact
+archives retain the rows whose `registration_month` matches that snapshot for
+every `monthly_*` dimension and retain every row from each `scope_*` dimension.
+Their manifest records archive format `1.0.0`, the retention policy and the
+checksums of the complete source datasets from which the archive was derived.
+The June and July 2026 archives predate this format and remain complete baseline
+snapshots.
+
 | File | Grain |
 |---|---|
 | `monthly_summary.json` | registration month x import-status group |
@@ -58,10 +66,13 @@ count field is `vehicle_count` because these are current-fleet snapshot counts,
 not counts for one registration month. Other dimensions retain all aggregate
 categories.
 
-Scope totals mean vehicles represented in the current NZTA fleet snapshot that
-were first registered in New Zealand from January 2007 onward. They must not be
-described as every vehicle currently in New Zealand. Model names are NZTA source
-categories and are not consolidated into editorial model families.
+Make/model and powertrain scope totals mean vehicles represented in the current
+NZTA fleet snapshot that were first registered in New Zealand from January 2007
+onward. They must not be described as every vehicle currently in New Zealand.
+`scope_vehicle_age.json` is different: as noted above, it covers the full
+ordinary passenger-vehicle snapshot when `VEHICLE_YEAR` is usable. Model names
+are NZTA source categories and are not consolidated into editorial model
+families.
 
 ## Group definitions
 
