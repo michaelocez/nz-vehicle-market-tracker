@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3", "ruff==0.16.2"]
+dev = ["pytest>=8.3", "ruff==0.16.5"]
 
 [project.scripts]
 nzvmt-feasibility = "nz_vehicle_market_tracker.feasibility:main"
