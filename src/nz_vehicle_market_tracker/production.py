@@ -43,11 +43,28 @@ class BrandInfo:
 class BrandReference:
     """Reviewable mapping from exact NZTA make values to marque origins."""
 
-    def __init__(self, entries: dict[str, BrandInfo]) -> None:
+    def __init__(
+        self,
+        entries: dict[str, BrandInfo],
+        *,
+        auto_update: bool = False,
+        reference_path: Path | None = None,
+        allow_network: bool = False,
+    ) -> None:
         self.entries = entries
+        self.auto_update = auto_update
+        self.reference_path = reference_path
+        self.allow_network = allow_network
+        self.newly_resolved: dict[str, BrandInfo] = {}
 
     @classmethod
-    def load(cls, path: Path) -> BrandReference:
+    def load(
+        cls,
+        path: Path,
+        *,
+        auto_update: bool = False,
+        allow_network: bool = False,
+    ) -> BrandReference:
         entries: dict[str, BrandInfo] = {}
         with path.open(encoding="utf-8-sig", newline="") as handle:
             reader = csv.DictReader(handle)
@@ -63,10 +80,43 @@ class BrandReference:
                 if source_make in entries:
                     raise ValueError(f"Duplicate source_make in brand reference: {source_make}")
                 entries[source_make] = BrandInfo(brand=brand, country=country)
-        return cls(entries)
+        return cls(
+            entries,
+            auto_update=auto_update,
+            reference_path=path,
+            allow_network=allow_network,
+        )
 
     def lookup(self, make: str) -> BrandInfo | None:
-        return self.entries.get(normalise(make))
+        norm = normalise(make)
+        if norm in self.entries:
+            return self.entries[norm]
+
+        if self.auto_update:
+            from .brands import resolve_brand
+
+            entry = resolve_brand(norm, allow_network=self.allow_network)
+            if entry is not None:
+                info = BrandInfo(brand=entry.brand, country=entry.brand_country)
+                self.entries[norm] = info
+                self.newly_resolved[norm] = info
+                return info
+
+        return None
+
+    def persist_changes(self) -> None:
+        if self.newly_resolved and self.reference_path:
+            from .brands import BrandEntry, save_brand_reference
+
+            to_save = {
+                make: BrandEntry(
+                    source_make=make,
+                    brand=info.brand,
+                    brand_country=info.country,
+                )
+                for make, info in self.entries.items()
+            }
+            save_brand_reference(self.reference_path, to_save)
 
 
 @dataclass(frozen=True)
@@ -308,6 +358,8 @@ def aggregate(
     if quality["current_fleet_age_rows"] + current_age_excluded != quality["passenger_rows"]:
         raise RuntimeError("Current-fleet age totals do not reconcile to passenger rows")
 
+    brand_reference.persist_changes()
+
     return {
         "contract": {
             "version": DATA_CONTRACT_VERSION,
@@ -330,6 +382,7 @@ def aggregate(
         "brand_coverage": {
             "mapped_share": (quality["mapped_brand_rows"] / included if included else None),
             "unmapped_makes": _records(unmapped_make, ("make",)),
+            "newly_resolved_makes": sorted(brand_reference.newly_resolved.keys()),
         },
         "datasets": {
             "monthly_summary": _records(
@@ -482,6 +535,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--brand-reference", type=Path, default=DEFAULT_BRAND_REFERENCE)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--start-month", default=DEFAULT_START_MONTH)
+    parser.add_argument(
+        "--auto-update-brands",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Automatically resolve and save newly observed brands from canonical database",
+    )
+    parser.add_argument(
+        "--allow-network",
+        action="store_true",
+        default=False,
+        help="Allow online fallback lookups for unknown makes during auto-update",
+    )
     return parser
 
 
@@ -494,7 +559,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Brand reference not found: {args.brand_reference}", file=sys.stderr)
         return 2
     try:
-        reference = BrandReference.load(args.brand_reference)
+        reference = BrandReference.load(
+            args.brand_reference,
+            auto_update=args.auto_update_brands,
+            allow_network=args.allow_network,
+        )
         result = aggregate(
             args.zip_path,
             reference,
@@ -508,6 +577,11 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Included {result['quality']['included_rows']:,} passenger rows")
     print(f"Snapshot month: {result['source']['snapshot_month'] or 'unknown'}")
     print(f"Brand coverage: {result['brand_coverage']['mapped_share']:.2%}")
+    if reference.newly_resolved:
+        print(
+            f"Auto-resolved {len(reference.newly_resolved)} brands into {args.brand_reference}: "
+            f"{', '.join(sorted(reference.newly_resolved.keys()))}"
+        )
     print(f"Manifest: {args.output_dir / 'manifest.json'}")
     print(f"Datasets: {len(manifest['files'])}")
     return 0

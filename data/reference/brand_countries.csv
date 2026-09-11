@@ -1,39 +1,122 @@
 source_make,brand,brand_country
+ABARTH,Abarth,Italy
+AC,AC,United Kingdom
 ALFA ROMEO,Alfa Romeo,Italy
+ALMAC,Almac,New Zealand
+ALPINA,Alpina,Germany
+ALPINE,Alpine,France
+ALVIS,Alvis,United Kingdom
+AM GENERAL,AM General,United States
+AMC,AMC,United States
+AMERICAN,American Motors,United States
+ARCFOX,Arcfox,China
 ASTON MARTIN,Aston Martin,United Kingdom
+AUBURN,Auburn,United States
 AUDI,Audi,Germany
 AUSTIN,Austin,United Kingdom
+AUSTIN-HEALEY,Austin-Healey,United Kingdom
+AUTECH,Autech,Japan
+AUTECH ZAGATO,Autech,Japan
+AUTO UNION,Auto Union,Germany
+AVATR,Avatr,China
+BAIC,BAIC,China
 BENTLEY,Bentley,United Kingdom
 BMW,BMW,Germany
+BOLWELL,Bolwell,Australia
+BORGWARD,Borgward,Germany
+BRICKLIN,Bricklin,Canada
+BRISTOL,Bristol,United Kingdom
+BUGATTI,Bugatti,France
+BUICK,Buick,United States
 BYD,BYD,China
 CADILLAC,Cadillac,United States
+CAN-AM,Can-Am,Canada
+CATERHAM,Caterham,United Kingdom
+CHANDLER,Chandler,United States
 CHERY,Chery,China
 CHEVROLET,Chevrolet,United States
 CHRYSLER,Chrysler,United States
+CHRYSLER JEEP,Jeep,United States
 CITROEN,Citroen,France
+CLENET,Clenet,United States
+CONTINENTAL,Continental,United States
+CORD,Cord,United States
+COUNTESS,Countess,New Zealand
 CUPRA,Cupra,Spain
+DACIA,Dacia,Romania
 DAEWOO,Daewoo,South Korea
 DAIHATSU,Daihatsu,Japan
+DAIMLER,Daimler,United Kingdom
 DATSUN,Datsun,Japan
+DAVIS,Davis,United States
+DE LOREAN,DeLorean,United States
+DE SOTO,DeSoto,United States
+DE TOMASO,De Tomaso,Italy
+DELAGE,Delage,France
+DELOREAN,DeLorean,United States
+DENZA,Denza,China
+DESOTO,DeSoto,United States
+DETOMASO,De Tomaso,Italy
+DIATTO,Diatto,Italy
+DIXON,Dixon,United States
 DODGE,Dodge,United States
+DONGFENG,Dongfeng,China
+DS,DS Automobiles,France
+DS AUTOMOBILES,DS Automobiles,France
+EDSEL,Edsel,United States
+ESSEX,Essex,United States
+EUNOS,Eunos,Japan
+EXCALIBUR,Excalibur,United States
+FANGCHENGBAO,Fangchengbao,China
 FERRARI,Ferrari,Italy
 FIAT,Fiat,Italy
+FISKER,Fisker,United States
 FORD,Ford,United States
+FORTHING,Forthing,China
+FOTON,Foton,China
+FRASER,Fraser,New Zealand
+GAC,GAC,China
 GEELY,Geely,China
 GENESIS,Genesis,South Korea
+GINETTA,Ginetta,United Kingdom
 GMC,GMC,United States
+GRAHAM,Graham,United States
+GRAHAM-PAIGE,Graham-Paige,United States
 GREAT WALL,Great Wall,China
 GWM,GWM,China
 HAVAL,Haval,China
+HILLMAN,Hillman,United Kingdom
+HINO,Hino,Japan
 HOLDEN,Holden,Australia
+HOLDEN SPECIAL VEHICLES,HSV,Australia
 HONDA,Honda,Japan
+HSV,HSV,Australia
+HUDSON,Hudson,United States
+HUMBER,Humber,United Kingdom
+HUMMER,Hummer,United States
+HUPMOBILE,Hupmobile,United States
 HYUNDAI,Hyundai,South Korea
+IMPERIAL,Imperial,United States
+INEOS,Ineos,United Kingdom
 INFINITI,Infiniti,Japan
+INTERNATIONAL,International,United States
+INTERNATIONAL HARVESTER,International,United States
+ISO,Iso,Italy
 ISUZU,Isuzu,Japan
 JAECOO,Jaecoo,China
 JAGUAR,Jaguar,United Kingdom
 JEEP,Jeep,United States
+JENSEN,Jensen,United Kingdom
+JEWETT,Jewett,United States
+JOWETT,Jowett,United Kingdom
+JUNEYAO,Juneyao,China
+KAISER,Kaiser,United States
+KGM,KGM,South Korea
 KIA,Kia,South Korea
+KOENIGSEGG,Koenigsegg,Sweden
+KTM,KTM,Austria
+LADA,Lada,Russia
+LAGONDA,Lagonda,United Kingdom
 LAMBORGHINI,Lamborghini,Italy
 LANCIA,Lancia,Italy
 LAND ROVER,Land Rover,United Kingdom
@@ -41,70 +124,103 @@ LANDROVER,Land Rover,United Kingdom
 LDV,LDV,United Kingdom
 LEAPMOTOR,Leapmotor,China
 LEXUS,Lexus,Japan
+LEYLAND,Leyland,United Kingdom
+LINCOLN,Lincoln,United States
+LIVAN,Livan,China
 LOTUS,Lotus,United Kingdom
+LUCID,Lucid,United States
 MAHINDRA,Mahindra,India
 MASERATI,Maserati,Italy
+MATRA,Matra,France
+MAYBACH,Maybach,Germany
 MAZDA,Mazda,Japan
+MCC,Smart,Germany
 MCLAREN,McLaren,United Kingdom
 MERCEDES BENZ,Mercedes-Benz,Germany
 MERCEDES-BENZ,Mercedes-Benz,Germany
+MERCURY,Mercury,United States
 MG,MG,United Kingdom
 MINI,Mini,United Kingdom
 MITSUBISHI,Mitsubishi,Japan
+MITSUOKA,Mitsuoka,Japan
+MORGAN,Morgan,United Kingdom
 MORRIS,Morris,United Kingdom
+NASH,Nash,United States
 NIO,Nio,China
 NISSAN,Nissan,Japan
+NISSAN INFINITI,Infiniti,Japan
+NSU,NSU,Germany
+OAKLAND,Oakland,United States
+OLDSMOBILE,Oldsmobile,United States
 OMODA,Omoda,China
 OPEL,Opel,Germany
+OVERLAND,Overland,United States
+PACKARD,Packard,United States
+PAGANI,Pagani,Italy
+PANTHER,Panther,United Kingdom
+PEERLESS,Peerless,United States
 PEUGEOT,Peugeot,France
+PIERCE-ARROW,Pierce-Arrow,United States
+PLYMOUTH,Plymouth,United States
 POLESTAR,Polestar,Sweden
 PONTIAC,Pontiac,United States
 PORSCHE,Porsche,Germany
 PROTON,Proton,Malaysia
 RAM,Ram,United States
+RAMBLER,Rambler,United States
+RANGE ROVER,Range Rover,United Kingdom
+RELIANT,Reliant,United Kingdom
 RENAULT,Renault,France
+REWACO,Rewaco,Germany
+RILEY,Riley,United Kingdom
+RIVIAN,Rivian,United States
 ROLLS-ROYCE,Rolls-Royce,United Kingdom
 ROVER,Rover,United Kingdom
 SAAB,Saab,Sweden
+SACHSENRING,Sachsenring,Germany
+SATURN,Saturn,United States
+SAXON,Saxon,United States
+SCION,Scion,Japan
 SEAT,Seat,Spain
+SHAY,Shay,United States
+SHELBY,Shelby,United States
+SINGER,Singer,United Kingdom
 SKODA,Skoda,Czech Republic
+SKYWELL,Skywell,China
+SKYWORTH,Skyworth,China
 SMART,Smart,Germany
 SSANGYONG,SsangYong,South Korea
+STANDARD,Standard,United Kingdom
+STUDEBAKER,Studebaker,United States
+STUTZ,Stutz,United States
 SUBARU,Subaru,Japan
+SUNBEAM,Sunbeam,United Kingdom
 SUZUKI,Suzuki,Japan
+SWALLOW,Swallow,United Kingdom
+TALBOT,Talbot,United Kingdom
 TATA,Tata,India
 TESLA,Tesla,United States
+TOWNSEND,Townsend,New Zealand
 TOYOTA,Toyota,Japan
+TOYOTA LEXUS,Lexus,Japan
 TRIUMPH,Triumph,United Kingdom
+TUSHEK,Tushek,Slovenia
+TVR,TVR,United Kingdom
+VALIANT,Valiant,United States
+VANDEN PLAS,Vanden Plas,United Kingdom
 VAUXHALL,Vauxhall,United Kingdom
+VENTURI,Venturi,France
+VINFAST,VinFast,Vietnam
 VOLKSWAGEN,Volkswagen,Germany
 VOLVO,Volvo,Sweden
 VW,Volkswagen,Germany
-XPENG,XPeng,China
-ZEEKR,Zeekr,China
-AUSTIN-HEALEY,Austin-Healey,United Kingdom
-BAIC,BAIC,China
-BUICK,Buick,United States
-CHRYSLER JEEP,Jeep,United States
-DAIMLER,Daimler,United Kingdom
-DENZA,Denza,China
-DONGFENG,Dongfeng,China
-FORTHING,Forthing,China
-FOTON,Foton,China
-FRASER,Fraser,New Zealand
-GAC,GAC,China
-HUMMER,Hummer,United States
-INEOS,Ineos,United Kingdom
-KGM,KGM,South Korea
-LINCOLN,Lincoln,United States
-MERCURY,Mercury,United States
-MORGAN,Morgan,United Kingdom
-OLDSMOBILE,Oldsmobile,United States
-PACKARD,Packard,United States
-PLYMOUTH,Plymouth,United States
-RANGE ROVER,Range Rover,United Kingdom
-STUDEBAKER,Studebaker,United States
-SUNBEAM,Sunbeam,United Kingdom
-TOYOTA LEXUS,Lexus,Japan
-TVR,TVR,United Kingdom
+WARSAW,FSO,Poland
+WARTBURG,Wartburg,Germany
+WESTFIELD,Westfield,United Kingdom
+WIESMANN,Wiesmann,Germany
 WILLYS,Willys,United States
+WOLSELEY,Wolseley,United Kingdom
+XPENG,XPeng,China
+YANGWANG,Yangwang,China
+ZAGATO,Zagato,Italy
+ZEEKR,Zeekr,China

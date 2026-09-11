@@ -20,12 +20,26 @@ test("build emits a GitHub Pages-compatible static entry point", async () => {
 });
 
 test("dashboard is dark-only and loads data from the Vite base path", async () => {
-  const [app, styles, packageJson, viteConfig] = await Promise.all([
-    readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
+  const componentFiles = [
+    "../src/App.tsx",
+    "../src/types.ts",
+    "../src/utils/formatters.ts",
+    "../src/components/ErrorState.tsx",
+    "../src/components/HeroSection.tsx",
+    "../src/components/MarketFlowSection.tsx",
+    "../src/components/FleetShapingSection.tsx",
+    "../src/components/UsedImportSection.tsx",
+    "../src/components/VehicleExplorerSection.tsx",
+    "../src/components/MethodologySection.tsx",
+    "../src/components/MonthChangeIndicator.tsx",
+  ];
+  const [appSources, styles, packageJson, viteConfig] = await Promise.all([
+    Promise.all(componentFiles.map((file) => readFile(new URL(file, import.meta.url), "utf8"))),
     readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../vite.config.ts", import.meta.url), "utf8"),
   ]);
+  const app = appSources.join("\n");
 
   assert.match(app, /import\.meta\.env\.BASE_URL/);
   assert.match(app, /scope_make\.json/);
@@ -86,10 +100,10 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
   assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
   assert.doesNotMatch(app, /year-to-date through June/);
-  assert.match(app, /data\.manifest\.contract\.version/);
-  assert.match(app, /data\.manifest\.generated_at_utc/);
+  assert.match(app, /manifest\.contract\.version/);
+  assert.match(app, /manifest\.generated_at_utc/);
   assert.match(app, /timeZone: "Pacific\/Auckland"/);
-  assert.match(app, /Aggregates generated <time/);
+  assert.match(app, /Aggregates generated/);
   assert.doesNotMatch(app, /<b>v\d+\.\d+(?:\.\d+)?<\/b> data contract/);
   assert.match(app, /href="https:\/\/www\.nzta\.govt\.nz\/resources\/new-zealand-motor-vehicle-register-statistics\/new-zealand-vehicle-fleet-open-data-sets"/);
   assert.match(app, /href="https:\/\/github\.com\/michaelocez\/nz-vehicle-market-tracker"/);

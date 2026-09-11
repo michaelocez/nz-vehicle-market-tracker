@@ -17,6 +17,7 @@ dev = ["pytest>=8.3", "ruff==0.16.5"]
 nzvmt-feasibility = "nz_vehicle_market_tracker.feasibility:main"
 nzvmt-download = "nz_vehicle_market_tracker.downloader:main"
 nzvmt-build = "nz_vehicle_market_tracker.production:main"
+nzvmt-brands = "nz_vehicle_market_tracker.brands:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nz_vehicle_market_tracker"]
