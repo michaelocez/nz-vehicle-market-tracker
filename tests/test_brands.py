@@ -1,11 +1,14 @@
 import csv
 from pathlib import Path
 
+import pytest
+
 from nz_vehicle_market_tracker.brands import (
     CANONICAL_BRAND_DATABASE,
     BrandEntry,
     is_non_brand_entity,
     load_brand_reference,
+    query_wikidata_brand,
     resolve_brand,
     save_brand_reference,
     update_brand_reference,
@@ -110,3 +113,71 @@ def test_canonical_database_coverage() -> None:
     assert "ABARTH" in CANONICAL_BRAND_DATABASE
     assert "ZEEKR" in CANONICAL_BRAND_DATABASE
     assert "ARCFOX" in CANONICAL_BRAND_DATABASE
+
+
+def test_wikidata_lookup_requires_an_exact_name_and_country_of_origin(monkeypatch: pytest.MonkeyPatch) -> None:
+    responses = iter(
+        [
+            {"search": [{"id": "Q1"}]},
+            {
+                "entities": {
+                    "Q1": {
+                        "labels": {"en": {"value": "Exact Motors"}},
+                        "aliases": {"en": [{"value": "Exact"}]},
+                        "claims": {
+                            "P495": [
+                                {
+                                    "rank": "normal",
+                                    "mainsnak": {"datavalue": {"value": {"id": "Q2"}}},
+                                }
+                            ]
+                        },
+                    }
+                }
+            },
+            {"entities": {"Q2": {"labels": {"en": {"value": "New Zealand"}}}}},
+        ]
+    )
+    monkeypatch.setattr("nz_vehicle_market_tracker.brands._wikidata_request", lambda _: next(responses))
+
+    assert query_wikidata_brand("exact") == BrandEntry("EXACT", "Exact Motors", "New Zealand")
+
+
+def test_wikidata_lookup_rejects_a_fuzzy_match(monkeypatch: pytest.MonkeyPatch) -> None:
+    responses = iter(
+        [
+            {"search": [{"id": "Q1"}]},
+            {
+                "entities": {
+                    "Q1": {
+                        "labels": {"en": {"value": "Different Motors"}},
+                        "aliases": {},
+                        "claims": {"P495": []},
+                    }
+                }
+            },
+        ]
+    )
+    monkeypatch.setattr("nz_vehicle_market_tracker.brands._wikidata_request", lambda _: next(responses))
+
+    assert query_wikidata_brand("exact") is None
+
+
+def test_brand_reference_caches_unresolved_lookups(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    csv_path = tmp_path / "brand_countries.csv"
+    save_brand_reference(csv_path, {})
+    calls = 0
+
+    def unresolved(make: str, *, allow_network: bool) -> BrandEntry | None:
+        nonlocal calls
+        calls += 1
+        assert make == "UNKNOWN MAKE"
+        assert allow_network is True
+        return None
+
+    monkeypatch.setattr("nz_vehicle_market_tracker.brands.resolve_brand", unresolved)
+    reference = BrandReference.load(csv_path, auto_update=True, allow_network=True)
+
+    assert reference.lookup("unknown make") is None
+    assert reference.lookup("UNKNOWN MAKE") is None
+    assert calls == 1

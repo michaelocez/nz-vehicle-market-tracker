@@ -5,19 +5,19 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import re
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.error import URLError
-from urllib.parse import quote_plus
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from .domain import normalise
 
 DEFAULT_BRAND_REFERENCE = Path("data/reference/brand_countries.csv")
 USER_AGENT = "nz-vehicle-market-tracker/0.1 (+brand reference maintenance)"
+WIKIDATA_API_URL = "https://www.wikidata.org/w/api.php"
 
 # Certification authorities, build types, and non-marque categories that must not be assigned a country
 NON_BRAND_ENTITIES = frozenset(
@@ -188,58 +188,128 @@ def is_non_brand_entity(make: str | None) -> bool:
     return normalise(make) in NON_BRAND_ENTITIES
 
 
+def _wikidata_request(parameters: dict[str, str]) -> dict[str, object]:
+    request = Request(
+        f"{WIKIDATA_API_URL}?{urlencode(parameters)}",
+        headers={"User-Agent": USER_AGENT},
+    )
+    with urlopen(request, timeout=5) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def _entity_names(entity: dict[str, object]) -> set[str]:
+    labels = entity.get("labels", {})
+    aliases = entity.get("aliases", {})
+    values: list[object] = []
+    if isinstance(labels, dict):
+        values.extend(labels.values())
+    if isinstance(aliases, dict):
+        for language_aliases in aliases.values():
+            if isinstance(language_aliases, list):
+                values.extend(language_aliases)
+    return {
+        normalise(value.get("value"))
+        for value in values
+        if isinstance(value, dict) and isinstance(value.get("value"), str)
+    }
+
+
+def _claim_entity_ids(entity: dict[str, object], property_id: str) -> set[str]:
+    claims = entity.get("claims", {})
+    if not isinstance(claims, dict):
+        return set()
+    values: set[str] = set()
+    for claim in claims.get(property_id, []):
+        if not isinstance(claim, dict) or claim.get("rank") == "deprecated":
+            continue
+        mainsnak = claim.get("mainsnak", {})
+        if not isinstance(mainsnak, dict):
+            continue
+        datavalue = mainsnak.get("datavalue", {})
+        if not isinstance(datavalue, dict) or not isinstance(datavalue.get("value"), dict):
+            continue
+        entity_id = datavalue["value"].get("id")
+        if isinstance(entity_id, str):
+            values.add(entity_id)
+    return values
+
+
 def query_wikidata_brand(make: str) -> BrandEntry | None:
-    """Safely query Wikidata API for automotive brand origin when offline knowledge misses it."""
+    """Resolve only exact marque matches with a Wikidata country-of-origin claim."""
     cleaned = normalise(make)
     if is_non_brand_entity(cleaned):
         return None
-
-    search_query = quote_plus(f"{cleaned} car manufacturer")
-    url = (
-        f"https://www.wikidata.org/w/api.php?action=wbsearchentities"
-        f"&search={search_query}&language=en&format=json&limit=1"
-    )
-    request = Request(url, headers={"User-Agent": USER_AGENT})
     try:
-        with urlopen(request, timeout=5) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-            results = payload.get("search", [])
-            if not results:
-                return None
-            title = results[0].get("label", "").strip()
-            description = results[0].get("description", "").lower()
-            if not any(word in description for word in ("car", "automobile", "vehicle", "marque", "motor")):
-                return None
-            # If description mentions country name, return title and country
-            country_patterns = [
-                ("united kingdom", "United Kingdom"),
-                ("british", "United Kingdom"),
-                ("japan", "Japan"),
-                ("japanese", "Japan"),
-                ("germany", "Germany"),
-                ("german", "Germany"),
-                ("united states", "United States"),
-                ("american", "United States"),
-                ("france", "France"),
-                ("french", "France"),
-                ("italy", "Italy"),
-                ("italian", "Italy"),
-                ("china", "China"),
-                ("chinese", "China"),
-                ("sweden", "Sweden"),
-                ("swedish", "Sweden"),
-                ("south korea", "South Korea"),
-                ("korean", "South Korea"),
-                ("australia", "Australia"),
-                ("australian", "Australia"),
-                ("new zealand", "New Zealand"),
-            ]
-            for pattern, country in country_patterns:
-                if re.search(r"\b" + pattern + r"\b", description):
-                    return BrandEntry(source_make=cleaned, brand=title or cleaned.title(), brand_country=country)
+        search = _wikidata_request(
+            {
+                "action": "wbsearchentities",
+                "search": cleaned,
+                "language": "en",
+                "format": "json",
+                "limit": "10",
+            }
+        )
+        candidates = search.get("search", [])
+        if not isinstance(candidates, list):
+            return None
+        candidate_ids = [
+            item.get("id")
+            for item in candidates
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        ]
+        if not candidate_ids:
+            return None
+        entities_response = _wikidata_request(
+            {
+                "action": "wbgetentities",
+                "ids": "|".join(candidate_ids),
+                "props": "labels|aliases|claims",
+                "languages": "en",
+                "format": "json",
+            }
+        )
+        entities = entities_response.get("entities", {})
+        if not isinstance(entities, dict):
+            return None
+        exact_matches = [
+            entity
+            for entity in entities.values()
+            if isinstance(entity, dict) and cleaned in _entity_names(entity)
+        ]
+        if len(exact_matches) != 1:
+            return None
+        entity = exact_matches[0]
+        country_ids = _claim_entity_ids(entity, "P495")
+        if len(country_ids) != 1:
+            return None
+        countries_response = _wikidata_request(
+            {
+                "action": "wbgetentities",
+                "ids": next(iter(country_ids)),
+                "props": "labels",
+                "languages": "en",
+                "format": "json",
+            }
+        )
+        countries = countries_response.get("entities", {})
+        if not isinstance(countries, dict):
+            return None
+        country = countries.get(next(iter(country_ids)), {})
+        if not isinstance(country, dict):
+            return None
+        labels = country.get("labels", {})
+        if not isinstance(labels, dict) or not isinstance(labels.get("en"), dict):
+            return None
+        country_name = labels["en"].get("value")
+        entity_labels = entity.get("labels", {})
+        if not isinstance(entity_labels, dict) or not isinstance(entity_labels.get("en"), dict):
+            return None
+        brand_name = entity_labels["en"].get("value")
+        if not isinstance(country_name, str) or not isinstance(brand_name, str):
+            return None
+        return BrandEntry(source_make=cleaned, brand=brand_name, brand_country=country_name)
     except (URLError, TimeoutError, OSError, json.JSONDecodeError):
-        pass
-    return None
+        return None
 
 
 def resolve_brand(make: str, *, allow_network: bool = False) -> BrandEntry | None:

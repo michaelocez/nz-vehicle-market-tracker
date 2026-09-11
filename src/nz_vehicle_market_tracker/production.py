@@ -56,6 +56,7 @@ class BrandReference:
         self.reference_path = reference_path
         self.allow_network = allow_network
         self.newly_resolved: dict[str, BrandInfo] = {}
+        self.unresolved_makes: set[str] = set()
 
     @classmethod
     def load(
@@ -92,6 +93,9 @@ class BrandReference:
         if norm in self.entries:
             return self.entries[norm]
 
+        if norm in self.unresolved_makes:
+            return None
+
         if self.auto_update:
             from .brands import resolve_brand
 
@@ -101,6 +105,8 @@ class BrandReference:
                 self.entries[norm] = info
                 self.newly_resolved[norm] = info
                 return info
+
+        self.unresolved_makes.add(norm)
 
         return None
 
