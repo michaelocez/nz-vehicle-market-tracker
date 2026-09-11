@@ -159,7 +159,7 @@ def test_refresh_workflow_uses_the_direct_official_zip_url() -> None:
     assert 'curl --fail --silent --show-error --head "$NZTA_ALL_YEARS_ZIP_URL"' in workflow
     assert "data/production/source-release.json" in workflow
     assert (
-        "git add data/production/source-release.json data/production/current "
+        "git add data/reference/brand_countries.csv data/production/source-release.json data/production/current "
         "data/production/archive"
     ) in workflow
     assert "steps.probe.outputs.changed == 'true'" in workflow
