@@ -12,6 +12,7 @@ from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from .domain import (
     calculate_import_age,
@@ -141,7 +142,7 @@ def aggregate(
     zip_path: Path,
     brand_reference: BrandReference,
     config: ProductionConfig | None = None,
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Stream one snapshot and return bounded, frontend-ready aggregate tables."""
 
     config = config or ProductionConfig()
@@ -434,7 +435,7 @@ def aggregate(
 def _write_json(path: Path, value: object, *, compact: bool) -> tuple[int, str]:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
-    options = {"ensure_ascii": False}
+    options: dict[str, Any] = {"ensure_ascii": False}
     if compact:
         options["separators"] = (",", ":")
     else:
@@ -445,7 +446,7 @@ def _write_json(path: Path, value: object, *, compact: bool) -> tuple[int, str]:
     return len(payload), hashlib.sha256(payload).hexdigest()
 
 
-def write_outputs(result: dict[str, object], output_dir: Path) -> dict[str, object]:
+def write_outputs(result: dict[str, Any], output_dir: Path) -> dict[str, Any]:
     """Write one JSON file per dimension plus a checksummed manifest."""
 
     output_dir.mkdir(parents=True, exist_ok=True)

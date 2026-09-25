@@ -10,6 +10,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from .domain import (
     calculate_import_age,
@@ -34,7 +35,7 @@ def _month_sort_key(month: str) -> tuple[int, int]:
     return int(year), int(number)
 
 
-def _write_csv(path: Path, fieldnames: list[str], rows: Iterable[dict[str, object]]) -> None:
+def _write_csv(path: Path, fieldnames: list[str], rows: Iterable[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
@@ -42,7 +43,7 @@ def _write_csv(path: Path, fieldnames: list[str], rows: Iterable[dict[str, objec
         writer.writerows(rows)
 
 
-def analyse(zip_path: Path, *, recent_months: int = 6) -> dict[str, object]:
+def analyse(zip_path: Path, *, recent_months: int = 6) -> dict[str, Any]:
     metadata, archive, stream = inspect_source(zip_path)
     text, reader = stream
     indexes = {name: metadata.source_columns.index(name) for name in REQUIRED_COLUMNS}
@@ -158,7 +159,7 @@ def analyse(zip_path: Path, *, recent_months: int = 6) -> dict[str, object]:
         passenger_recent_counts.update(passenger_month_vehicle_year_bands[month])
     passenger_recent_total = sum(passenger_month_counts[month] for month in selected_recent)
 
-    def counter_dict(counter: Counter) -> dict[str, int]:
+    def counter_dict(counter: Counter[str]) -> dict[str, int]:
         return dict(sorted(counter.items(), key=lambda item: (-item[1], str(item[0]))))
 
     def counter_median(counter: Counter[int]) -> float | None:
@@ -293,7 +294,7 @@ def analyse(zip_path: Path, *, recent_months: int = 6) -> dict[str, object]:
     return result
 
 
-def write_outputs(result: dict[str, object], output_dir: Path, report_path: Path) -> None:
+def write_outputs(result: dict[str, Any], output_dir: Path, report_path: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     summary_path = output_dir / "data_quality_summary.json"
     summary_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
@@ -352,7 +353,7 @@ def _category_table(values: dict[str, int]) -> str:
     return "\n".join(lines)
 
 
-def render_report(result: dict[str, object]) -> str:
+def render_report(result: dict[str, Any]) -> str:
     source = result["source"]
     registration = result["registration_month"]
     rows = result["rows"]

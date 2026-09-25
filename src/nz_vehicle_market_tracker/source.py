@@ -5,11 +5,12 @@ from __future__ import annotations
 import csv
 import io
 import zipfile
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO
 
-ANALYTICAL_COLUMNS = (
+ANALYTICAL_COLUMNS: tuple[str, ...] = (
     "VEHICLE_YEAR",
     "FIRST_NZ_REGISTRATION_YEAR",
     "FIRST_NZ_REGISTRATION_MONTH",
@@ -36,7 +37,7 @@ class SourceMetadata:
 
 def open_fleet_csv(
     zip_path: Path,
-) -> tuple[SourceMetadata, zipfile.ZipFile, tuple[TextIO, csv.reader]]:
+) -> tuple[SourceMetadata, zipfile.ZipFile, tuple[TextIO, Iterable[list[str]]]]:
     """Open the single fleet CSV in a ZIP and validate the analytical schema."""
 
     archive = zipfile.ZipFile(zip_path)

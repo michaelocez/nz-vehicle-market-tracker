@@ -9,12 +9,13 @@ import re
 import shutil
 import sys
 from pathlib import Path
+from typing import Any
 
 SNAPSHOT_MONTH_PATTERN = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 ARCHIVE_FORMAT_VERSION = "1.0.0"
 
 
-def load_manifest(directory: Path) -> dict[str, object]:
+def load_manifest(directory: Path) -> dict[str, Any]:
     path = directory / "manifest.json"
     try:
         manifest = json.loads(path.read_text(encoding="utf-8"))
@@ -26,7 +27,7 @@ def load_manifest(directory: Path) -> dict[str, object]:
     return manifest
 
 
-def snapshot_month(manifest: dict[str, object]) -> str:
+def snapshot_month(manifest: dict[str, Any]) -> str:
     source = manifest.get("source")
     value = source.get("snapshot_month") if isinstance(source, dict) else None
     if not isinstance(value, str) or not SNAPSHOT_MONTH_PATTERN.fullmatch(value):
@@ -34,7 +35,7 @@ def snapshot_month(manifest: dict[str, object]) -> str:
     return value
 
 
-def data_signature(manifest: dict[str, object]) -> tuple[str, tuple[tuple[str, str], ...]]:
+def data_signature(manifest: dict[str, Any]) -> tuple[str, tuple[tuple[str, str], ...]]:
     files = manifest.get("files")
     if not isinstance(files, dict) or not files:
         raise ValueError("Aggregate manifest has no dataset file checksums")
@@ -48,7 +49,7 @@ def data_signature(manifest: dict[str, object]) -> tuple[str, tuple[tuple[str, s
     return snapshot_month(manifest), tuple(sorted(checksums))
 
 
-def validate_dataset_files(directory: Path, manifest: dict[str, object]) -> None:
+def validate_dataset_files(directory: Path, manifest: dict[str, Any]) -> None:
     files = manifest.get("files")
     if not isinstance(files, dict):
         # Preserve ValueError as the consistent contract for invalid manifest contents.
@@ -89,7 +90,7 @@ def _sync_json_files(source: Path, destination: Path) -> None:
 
 
 def _write_json(path: Path, value: object, *, compact: bool) -> tuple[int, str]:
-    options: dict[str, object] = {"ensure_ascii": False}
+    options: dict[str, Any] = {"ensure_ascii": False}
     if compact:
         options["separators"] = (",", ":")
     else:
@@ -99,13 +100,13 @@ def _write_json(path: Path, value: object, *, compact: bool) -> tuple[int, str]:
     return len(payload), hashlib.sha256(payload).hexdigest()
 
 
-def _source_checksums(manifest: dict[str, object]) -> dict[str, str]:
+def _source_checksums(manifest: dict[str, Any]) -> dict[str, str]:
     return dict(data_signature(manifest)[1])
 
 
 def _archive_matches_candidate(
     archive: Path,
-    candidate_manifest: dict[str, object],
+    candidate_manifest: dict[str, Any],
 ) -> bool:
     candidate_signature = data_signature(candidate_manifest)
     if _signature_if_present(archive) == candidate_signature:
@@ -129,7 +130,7 @@ def _archive_matches_candidate(
     )
 
 
-def _compact_records(name: str, document: object, month: str) -> dict[str, object]:
+def _compact_records(name: str, document: object, month: str) -> dict[str, Any]:
     if not isinstance(document, dict) or not isinstance(document.get("records"), list):
         # Invalid decoded JSON is malformed input under this module's ValueError contract.
         raise ValueError(f"Aggregate dataset has no records array: {name}.json")  # noqa: TRY004
@@ -160,7 +161,7 @@ def _compact_records(name: str, document: object, month: str) -> dict[str, objec
 def _write_compact_archive(
     candidate: Path,
     archive: Path,
-    candidate_manifest: dict[str, object],
+    candidate_manifest: dict[str, Any],
 ) -> None:
     month = snapshot_month(candidate_manifest)
     temporary = archive.parent / f".{month}.tmp"

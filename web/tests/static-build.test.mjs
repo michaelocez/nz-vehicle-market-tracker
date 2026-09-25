@@ -85,6 +85,7 @@ test("dashboard is dark-only and loads data from the Vite base path", async () =
   assert.doesNotMatch(styles, /\.powertrain-panel \{ grid-row: span 2/);
   assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
   assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
+  assert.match(app, /2007–\$\{view\.latest\.slice\(0, 4\)\}/);
   assert.doesNotMatch(app, /year-to-date through June/);
   assert.match(app, /data\.manifest\.contract\.version/);
   assert.match(app, /data\.manifest\.generated_at_utc/);
