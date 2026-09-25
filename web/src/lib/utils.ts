@@ -86,11 +86,13 @@ export function changeTone(change: MonthChange): "steady" | "up" | "down" {
 
 export function weightedMedian(records: { approximate_import_age: number; registration_count: number }[]): number | null {
   const ordered = [...records].sort((a, b) => a.approximate_import_age - b.approximate_import_age);
-  const halfway = ordered.reduce((sum, row) => sum + row.registration_count, 0) / 2;
+  const total = ordered.reduce((sum, row) => sum + row.registration_count, 0);
+  if (total === 0) return null;
+  const halfway = total / 2;
   let cumulative = 0;
   for (const row of ordered) {
     cumulative += row.registration_count;
     if (cumulative >= halfway) return row.approximate_import_age;
   }
-  return 0;
+  return null;
 }

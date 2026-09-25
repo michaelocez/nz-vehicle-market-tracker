@@ -156,7 +156,49 @@ def test_writes_checksummed_dimension_files(tmp_path: Path) -> None:
     assert monthly_summary["snapshot_month"] == "2026-06"
 
 
-def test_committed_contract_versions_match_the_pipeline_constant() -> None:
+EXPECTED_QUALITY_COUNTERS = {
+    "source_rows",
+    "malformed_rows",
+    "non_passenger_rows",
+    "passenger_rows",
+    "invalid_registration_month_rows",
+    "before_start_month_rows",
+    "included_rows",
+    "unmapped_brand_rows",
+    "mapped_brand_rows",
+    "missing_vehicle_year_rows",
+    "comparable_vehicle_year_rows",
+    "legacy_vehicle_year_rows",
+    "current_fleet_age_rows",
+    "excluded_current_fleet_age_missing_or_invalid_vehicle_year_rows",
+    "excluded_current_fleet_age_future_vehicle_year_rows",
+    "excluded_current_fleet_age_implausible_vehicle_year_rows",
+    "used_import_rows",
+    "comparable_import_age_rows",
+    "excluded_import_age_legacy_vehicle_year_rows",
+    "excluded_import_age_missing_rows",
+    "excluded_import_age_negative_rows",
+    "excluded_import_age_implausible_rows",
+}
+
+
+def test_manifest_quality_contains_all_counters_including_zeros(tmp_path: Path) -> None:
+    source = tmp_path / "fleet.zip"
+    _write_zip(source, [_row()])
+
+    result = aggregate(
+        source,
+        BrandReference({"TOYOTA": BrandInfo("Toyota", "Japan")}),
+    )
+
+    quality = result["quality"]
+    assert set(quality) == EXPECTED_QUALITY_COUNTERS
+    for name in EXPECTED_QUALITY_COUNTERS:
+        assert name in quality
+    assert quality["malformed_rows"] == 0
+    assert quality["invalid_registration_month_rows"] == 0
+    assert quality["non_passenger_rows"] == 0
+    assert quality["excluded_import_age_missing_rows"] == 0
     root = Path(__file__).resolve().parents[1]
     document = (root / "docs" / "data-contract.md").read_text(encoding="utf-8")
     documented_version = re.search(r"Contract version: `([^`]+)`", document)

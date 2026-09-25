@@ -1,4 +1,3 @@
-import { MonthChangeIndicator } from "./MonthChangeIndicator";
 import { number, percent, prettyMonth, prettyMonthName } from "../lib/utils";
 import type { DashboardView } from "../lib/dashboardView";
 import type { Range } from "../lib/types";
@@ -49,7 +48,7 @@ export function MarketSection({
         <div><span className="section-number">01</span><h2>Market flow</h2></div>
         <div className="range-control" aria-label="Chart range">
           {(["5y", "10y", "all"] as Range[]).map((value) => (
-            <button key={value} className={range === value ? "active" : ""} onClick={() => setRange(value)}>
+            <button key={value} className={range === value ? "active" : ""} aria-pressed={range === value} onClick={() => setRange(value)}>
               {value === "all" ? "All" : value.toUpperCase()}
             </button>
           ))}
