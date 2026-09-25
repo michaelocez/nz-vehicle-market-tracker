@@ -163,4 +163,5 @@ def test_refresh_workflow_uses_the_direct_official_zip_url() -> None:
         "data/production/archive"
     ) in workflow
     assert "steps.probe.outputs.changed == 'true'" in workflow
+    assert "python -m pyright" in workflow
     assert "inputs.force" in workflow

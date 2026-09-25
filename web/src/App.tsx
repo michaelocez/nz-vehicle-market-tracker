@@ -508,7 +508,7 @@ export default function Home() {
 
         <div className="hero-content wrap">
           <div className="hero-copy">
-            <span className="eyebrow">NEW ZEALAND · PASSENGER VEHICLES · 2007–2026</span>
+            <span className="eyebrow">{`NEW ZEALAND · PASSENGER VEHICLES · 2007–${view.latest.slice(0, 4)}`}</span>
             <h1>How New Zealand&apos;s car market is changing.</h1>
             <p className="hero-intro">
               A monthly view of NZ-new cars, used imports, powertrains and the vehicles entering the fleet.

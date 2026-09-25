@@ -36,6 +36,9 @@ jobs:
       - name: Check Python code quality
         run: python -m ruff check .
 
+      - name: Type-check Python source
+        run: python -m pyright
+
       - name: Run Python tests
         run: python -m pytest
 

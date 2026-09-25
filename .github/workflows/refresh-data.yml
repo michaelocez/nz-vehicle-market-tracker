@@ -86,7 +86,10 @@ jobs:
 
       - name: Test the data pipeline
         if: steps.probe.outputs.changed == 'true'
-        run: python -m pytest
+        run: |
+          python -m ruff check .
+          python -m pyright
+          python -m pytest
 
       - name: Download the current all-vehicle-years release
         if: steps.probe.outputs.changed == 'true'

@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3", "ruff==0.16.5"]
+dev = ["pytest>=8.3", "ruff==0.16.5", "pyright>=1.1.414"]
 
 [project.scripts]
 nzvmt-feasibility = "nz_vehicle_market_tracker.feasibility:main"
@@ -47,3 +47,8 @@ select = [
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.11"
+typeCheckingMode = "basic"

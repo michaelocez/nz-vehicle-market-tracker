@@ -2,8 +2,6 @@
 /dist/
 /public/data/
 /coverage/
-/.vinext/
-/.wrangler/
 .env*
 npm-debug.log*
 .DS_Store

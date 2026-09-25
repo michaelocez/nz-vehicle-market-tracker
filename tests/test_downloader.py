@@ -36,10 +36,10 @@ def test_redirect_handler_rejects_non_https_target(redirect_url: str) -> None:
     with pytest.raises(ValueError, match="Only HTTPS redirects are accepted"):
         HttpsOnlyRedirectHandler().redirect_request(
             request,
-            None,
+            None,  # type: ignore[arg-type]
             302,
             "Found",
-            {},
+            {},  # type: ignore[arg-type]
             redirect_url,
         )
 
@@ -49,10 +49,10 @@ def test_redirect_handler_allows_https_target() -> None:
 
     redirected = HttpsOnlyRedirectHandler().redirect_request(
         request,
-        None,
+        None,  # type: ignore[arg-type]
         302,
         "Found",
-        {},
+        {},  # type: ignore[arg-type]
         "https://downloads.example.test/Fleet-data-all-vehicle-years.zip",
     )
 
