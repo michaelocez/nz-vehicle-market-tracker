@@ -214,3 +214,39 @@ test("Cloudflare and Sites scaffolding is absent", async () => {
     await assert.rejects(access(new URL(path, import.meta.url)));
   }
 });
+
+test("synced data files include everything the frontend loader expects", async () => {
+  const dataDir = new URL("../public/data", import.meta.url);
+  const entries = await readdir(dataDir, { withFileTypes: true });
+  const actualFiles = new Set(
+    entries.filter((entry) => entry.isFile()).map((entry) => entry.name),
+  );
+
+  const expectedFiles = [
+    "manifest.json",
+    "monthly_summary.json",
+    "monthly_powertrain.json",
+    "monthly_make.json",
+    "monthly_model.json",
+    "monthly_make_powertrain.json",
+    "monthly_model_powertrain.json",
+    "scope_make.json",
+    "scope_model.json",
+    "scope_make_powertrain.json",
+    "scope_model_powertrain.json",
+    "scope_vehicle_age.json",
+    "monthly_previous_country.json",
+    "monthly_import_age.json",
+  ];
+
+  for (const file of expectedFiles) {
+    assert.ok(actualFiles.has(file), `Frontend expected file ${file} is missing from synced data`);
+  }
+});
+
+test("weightedMedian returns null for empty or zero-weight input", async () => {
+  const source = await readFile(new URL("../src/lib/utils.ts", import.meta.url), "utf8");
+
+  assert.match(source, /if \(total === 0\) return null;/);
+  assert.match(source, /const total = ordered\.reduce\(/);
+});
