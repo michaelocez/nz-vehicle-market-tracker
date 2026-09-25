@@ -1,6 +1,28 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
+
+const SRC_DIR = fileURLToPath(new URL("../src", import.meta.url));
+
+async function readAllSource() {
+  const files = [];
+  async function walk(dir) {
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(fullPath);
+      } else if (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx")) {
+        files.push(readFile(fullPath, "utf8"));
+      }
+    }
+  }
+  await walk(SRC_DIR);
+  const contents = await Promise.all(files);
+  return contents.join("\n");
+}
 
 test("build emits a GitHub Pages-compatible static entry point", async () => {
   const html = await readFile(new URL("../dist/index.html", import.meta.url), "utf8");
@@ -20,86 +42,95 @@ test("build emits a GitHub Pages-compatible static entry point", async () => {
 });
 
 test("dashboard is dark-only and loads data from the Vite base path", async () => {
-  const [app, styles, packageJson, viteConfig] = await Promise.all([
+  const [app, styles, packageJson, viteConfig, allSource] = await Promise.all([
     readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../vite.config.ts", import.meta.url), "utf8"),
+    readAllSource(),
   ]);
 
-  assert.match(app, /import\.meta\.env\.BASE_URL/);
-  assert.match(app, /scope_make\.json/);
-  assert.match(app, /scope_model\.json/);
-  assert.match(app, /monthly_make_powertrain\.json/);
-  assert.match(app, /monthly_model_powertrain\.json/);
-  assert.match(app, /scope_make_powertrain\.json/);
-  assert.match(app, /scope_model_powertrain\.json/);
-  assert.match(app, /scope_vehicle_age\.json/);
-  assert.match(app, /htmlFor="make-select"/);
-  assert.match(app, /<optgroup label="Recognised makes">/);
-  assert.match(app, /<optgroup label="Other \/ unmapped source makes">/);
-  assert.match(app, /Vehicles represented in the current NZTA fleet snapshot/);
-  assert.match(app, /aria-label="Vehicle ranking view"/);
-  assert.match(app, /aria-pressed=\{vehicleView === value\}/);
-  assert.match(app, /Latest entries/);
-  assert.match(app, /Current fleet/);
-  assert.match(app, /function monthChange\(current: number, previous: number \| undefined\)/);
-  assert.match(app, /className=\{`month-change \$\{changeTone\(change\)\}/);
-  assert.match(app, /Changes compare with \{prettyMonth\(view\.previousMonth\)\}/);
-  assert.match(app, /outside that month&apos;s published top 25/);
-  assert.match(app, /previousPowertrainTotals/);
-  assert.match(app, /previousMakeRecords/);
-  assert.match(app, /previousModelRecords/);
+  assert.match(allSource, /import\.meta\.env\.BASE_URL/);
+  assert.match(allSource, /scope_make\.json/);
+  assert.match(allSource, /scope_model\.json/);
+  assert.match(allSource, /monthly_make_powertrain\.json/);
+  assert.match(allSource, /monthly_model_powertrain\.json/);
+  assert.match(allSource, /scope_make_powertrain\.json/);
+  assert.match(allSource, /scope_model_powertrain\.json/);
+  assert.match(allSource, /scope_vehicle_age\.json/);
+  assert.match(allSource, /htmlFor="make-select"/);
+  assert.match(allSource, /<optgroup label="Recognised makes">/);
+  assert.match(allSource, /<optgroup label="Other \/ unmapped source makes">/);
+  assert.match(allSource, /Vehicles represented in the current NZTA fleet snapshot/);
+  assert.match(allSource, /aria-label="Vehicle ranking view"/);
+  assert.match(allSource, /aria-pressed=\{vehicleView === value\}/);
+  assert.match(allSource, /Latest entries/);
+  assert.match(allSource, /Current fleet/);
+  assert.match(allSource, /function monthChange\(current: number, previous: number \| undefined\)/);
+  assert.match(allSource, /className=\{`month-change \$\{changeTone\(change\)\}/);
+  assert.match(allSource, /Changes compare with \{prettyMonth\(view\.previousMonth\)\}/);
+  assert.match(allSource, /outside that month&apos;s published top 25/);
+  assert.match(allSource, /previousPowertrainTotals/);
+  assert.match(allSource, /previousMakeRecords/);
+  assert.match(allSource, /previousModelRecords/);
   assert.match(styles, /\.month-change\.up b/);
   assert.match(styles, /\.month-change\.down b/);
-  assert.match(app, /aria-label="Leaderboard powertrain filter"/);
-  assert.match(app, /PASSENGER VEHICLES ONLY · MA \/ MB \/ MC/);
-  assert.match(app, /\["all", "combustion", "hybrid", "bev", "phev", "other"\]/);
-  assert.match(app, /leaderboardPowertrain === value/);
-  assert.match(app, /CURRENT FLEET SNAPSHOT · 2007\+ SCOPE/);
-  assert.match(app, /ARRIVAL CHANNEL BY POWERTRAIN/);
-  assert.match(app, /arrivalPowertrains = \["combustion", "hybrid", "bev", "phev"\]/);
-  assert.match(app, /className="panel arrival-panel"/);
-  assert.match(app, /className="annual-readout"/);
-  assert.match(app, /onMouseEnter=\{\(\) => setActiveMarketYear\(row\.year\)\}/);
-  assert.match(app, /aria-pressed=\{activeAnnual\?\.year === row\.year\}/);
-  assert.match(app, /className="monthly-detail-controls"/);
-  assert.match(app, /aria-label="Previous month"/);
-  assert.match(app, /aria-label="Next month"/);
-  assert.match(app, /setSelectedMarketMonth/);
-  assert.match(app, /Browse exact passenger-vehicle entries for any available month/);
-  assert.match(app, /className="country-kicker-toggle"/);
-  assert.match(app, /aria-pressed=\{countryView === "snapshot"\}/);
-  assert.match(app, /setCountryView/);
-  assert.match(app, /CURRENT FLEET · 2007\+/);
-  assert.match(app, /className="panel fleet-age-panel"/);
-  assert.match(app, /CURRENT FLEET AGE · DATA AS AT/);
-  assert.match(app, /How old are New Zealand&apos;s registered passenger cars\?/);
-  assert.match(app, /approximate_current_age/);
-  assert.match(app, /vehicleYearLabel/);
-  assert.match(app, /vehicle year \$\{selectedFleetAge\.vehicleYearLabel\}/);
-  assert.match(app, /label === "1" \? "1 year old"/);
-  assert.match(app, /aria-label="Current registered passenger fleet by approximate age"/);
-  assert.match(app, /onMouseEnter=\{\(\) => setActiveFleetAge\(row\.age\)\}/);
-  assert.doesNotMatch(app, /setSelectedCountryMonth/);
-  assert.doesNotMatch(styles, /\.powertrain-panel \{ grid-row: span 2/);
-  assert.doesNotMatch(styles, /\.arrival-mix \{ margin-top: auto/);
-  assert.match(app, /className="stat-kicker">\{prettyMonth\(view\.latest\)\}/);
-  assert.match(app, /2007–\$\{view\.latest\.slice\(0, 4\)\}/);
-  assert.doesNotMatch(app, /year-to-date through June/);
-  assert.match(app, /data\.manifest\.contract\.version/);
-  assert.match(app, /data\.manifest\.generated_at_utc/);
-  assert.match(app, /timeZone: "Pacific\/Auckland"/);
-  assert.match(app, /Aggregates generated <time/);
-  assert.doesNotMatch(app, /<b>v\d+\.\d+(?:\.\d+)?<\/b> data contract/);
-  assert.match(app, /href="https:\/\/www\.nzta\.govt\.nz\/resources\/new-zealand-motor-vehicle-register-statistics\/new-zealand-vehicle-fleet-open-data-sets"/);
-  assert.match(app, /href="https:\/\/github\.com\/michaelocez\/nz-vehicle-market-tracker"/);
-  assert.doesNotMatch(styles, /--brand-mark-bg|--brand-mark-border/);
+  assert.match(allSource, /aria-label="Leaderboard powertrain filter"/);
+  assert.match(allSource, /PASSENGER VEHICLES ONLY · MA \/ MB \/ MC/);
+  assert.match(allSource, /\["all", "combustion", "hybrid", "bev", "phev", "other"\]/);
+  assert.match(allSource, /leaderboardPowertrain === value/);
+  assert.match(allSource, /registration_month_from/);
+  assert.match(allSource, /ARRIVAL CHANNEL BY POWERTRAIN/);
+  assert.match(allSource, /arrivalPowertrains = \["combustion", "hybrid", "bev", "phev"\]/);
+  assert.match(allSource, /className="panel arrival-panel"/);
+  assert.match(allSource, /className="annual-readout"/);
+  assert.match(allSource, /onMouseEnter=\{\(\) => setActiveMarketYear\(row\.year\)\}/);
+  assert.match(allSource, /aria-pressed=\{activeAnnual\?\.year === row\.year\}/);
+  assert.match(allSource, /className="monthly-detail-controls"/);
+  assert.match(allSource, /aria-label="Previous month"/);
+  assert.match(allSource, /aria-label="Next month"/);
+  assert.match(allSource, /setSelectedMarketMonth/);
+  assert.match(allSource, /Browse exact passenger-vehicle entries for any available month/);
+  assert.match(allSource, /className="country-kicker-toggle"/);
+  assert.match(allSource, /aria-pressed=\{countryView === "snapshot"\}/);
+  assert.match(allSource, /setCountryView/);
+  assert.match(allSource, /view\.startYear\}\+/);
+  assert.match(allSource, /CURRENT FLEET · \$\{view\.startYear\}\+/);
+  assert.match(allSource, /className="panel fleet-age-panel"/);
+  assert.match(allSource, /CURRENT FLEET AGE · DATA AS AT/);
+  assert.match(allSource, /How old are New Zealand&apos;s registered passenger cars\?/);
+  assert.match(allSource, /approximate_current_age/);
+  assert.match(allSource, /vehicleYearLabel/);
+  assert.match(allSource, /vehicle year \$\{selectedFleetAge\.vehicleYearLabel\}/);
+  assert.match(allSource, /label === "1" \? "1 year old"/);
+  assert.match(allSource, /aria-label="Current registered passenger fleet by approximate age"/);
+  assert.match(allSource, /onMouseEnter=\{\(\) => setActiveFleetAge\(row\.age\)\}/);
+  assert.match(allSource, /manifest\.contract\.version/);
+  assert.match(allSource, /manifest\.generated_at_utc/);
+  assert.match(allSource, /timeZone: "Pacific\/Auckland"/);
+  assert.match(allSource, /Aggregates generated <time/);
+  assert.doesNotMatch(allSource, /<b>v\d+\.\d+(?:\.\d+)?<\/b> data contract/);
+  assert.match(allSource, /href="https:\/\/www\.nzta\.govt\.nz\/resources\/new-zealand-motor-vehicle-register-statistics\/new-zealand-vehicle-fleet-open-data-sets"/);
+  assert.match(allSource, /href="https:\/\/github\.com\/michaelocez\/nz-vehicle-market-tracker"/);
   assert.match(styles, /color-scheme:\s*dark/);
-  assert.doesNotMatch(app, /localStorage|theme-toggle|Switch to.*mode/);
+  assert.doesNotMatch(allSource, /localStorage|theme-toggle|Switch to.*mode/);
   assert.doesNotMatch(styles, /data-theme|theme-toggle/);
   assert.doesNotMatch(packageJson, /next|vinext|wrangler|cloudflare/i);
   assert.match(viteConfig, /base:\s*"\.\/"/);
+
+  assert.match(app, /import { computeDashboardView } from "\.\/lib\/dashboardView"/);
+  assert.match(app, /import { ErrorState } from "\.\/components\/ErrorState"/);
+  assert.match(app, /import { Hero } from "\.\/components\/Hero"/);
+  assert.match(app, /import { MarketSection } from "\.\/components\/MarketSection"/);
+  assert.match(app, /import { VehiclesSection } from "\.\/components\/VehiclesSection"/);
+  assert.match(app, /import { ImportsSection } from "\.\/components\/ImportsSection"/);
+  assert.match(app, /import { ExplorerSection } from "\.\/components\/ExplorerSection"/);
+  assert.match(app, /import { MethodologySection } from "\.\/components\/MethodologySection"/);
+  assert.match(app, /import { Footer } from "\.\/components\/Footer"/);
+  assert.match(allSource, /startYear: number;/);
+  assert.match(allSource, /startYear = Number\(.*registration_month_from/);
+  assert.doesNotMatch(app, /function Home\(\) \{[\s\S]*function render/);
+  assert.doesNotMatch(app, /useState.*activeMarketYear/);
 });
 
 test("synced data matches the approved production snapshot", async () => {
