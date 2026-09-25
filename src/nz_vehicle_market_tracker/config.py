@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from pathlib import Path
 
 from .domain import registration_month
 
 DATA_CONTRACT_VERSION = "1.3.0"
 DEFAULT_START_MONTH = "2007-01"
 MAX_CURRENT_FLEET_AGE = 150
-DEFAULT_OUTPUT_DIR = "data/production/current"
+DEFAULT_OUTPUT_DIR = Path("data/production/current")
 LEADERBOARD_LIMIT = 25
 LEADERBOARD_POWERTRAIN_GROUPS = ("combustion", "hybrid", "bev", "phev", "other")
 _QUALITY_FIELDS = (
