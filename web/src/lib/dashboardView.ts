@@ -21,7 +21,7 @@ import {
   monthChange,
   prettyMonth,
   weightedMedian,
-} from "./utils";
+} from "./utils.ts";
 
 export interface DashboardView {
   latest: string;

@@ -1,6 +1,6 @@
 import type { DashboardData } from "./types";
 
-const FILES = [
+export const DATA_FILES = [
   "manifest.json",
   "monthly_summary.json",
   "monthly_powertrain.json",
@@ -34,7 +34,7 @@ export async function loadData(baseUrl: string): Promise<DashboardData> {
     monthlyPreviousCountry,
     monthlyImportAge,
   ] = await Promise.all(
-    FILES.map((file) => fetch(`${baseUrl}data/${file}`).then((response) => {
+    DATA_FILES.map((file) => fetch(`${baseUrl}data/${file}`).then((response) => {
       if (!response.ok) throw new Error(file);
       return response.json();
     })),

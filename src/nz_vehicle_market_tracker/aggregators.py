@@ -7,9 +7,9 @@ from dataclasses import dataclass
 
 from .brands import BrandReference
 from .config import (
-    _QUALITY_FIELDS,
     LEADERBOARD_POWERTRAIN_GROUPS,
     MAX_CURRENT_FLEET_AGE,
+    QUALITY_FIELDS,
     ProductionConfig,
 )
 from .domain import (
@@ -50,7 +50,7 @@ class Accumulators:
     @classmethod
     def fresh(cls) -> Accumulators:
         quality: Counter[str] = Counter()
-        for field in _QUALITY_FIELDS:
+        for field in QUALITY_FIELDS:
             quality[field] = 0
         return cls(
             quality=quality,

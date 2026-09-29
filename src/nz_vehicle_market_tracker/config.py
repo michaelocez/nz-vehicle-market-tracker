@@ -14,7 +14,7 @@ MAX_CURRENT_FLEET_AGE = 150
 DEFAULT_OUTPUT_DIR = Path("data/production/current")
 LEADERBOARD_LIMIT = 25
 LEADERBOARD_POWERTRAIN_GROUPS = ("combustion", "hybrid", "bev", "phev", "other")
-_QUALITY_FIELDS = (
+QUALITY_FIELDS = (
     "source_rows",
     "malformed_rows",
     "non_passenger_rows",
