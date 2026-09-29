@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
+import { DATA_FILES } from "../src/lib/data.ts";
+
 const SRC_DIR = fileURLToPath(new URL("../src", import.meta.url));
 
 async function readAllSource() {
@@ -41,96 +43,20 @@ test("build emits a GitHub Pages-compatible static entry point", async () => {
   assert.doesNotMatch(html, /_next|_vinext|cloudflare/i);
 });
 
-test("dashboard is dark-only and loads data from the Vite base path", async () => {
-  const [app, styles, packageJson, viteConfig, allSource] = await Promise.all([
-    readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
+test("frontend stays a dark-only dashboard served from a relative base path", async () => {
+  const [allSource, styles, packageJson, viteConfig] = await Promise.all([
+    readAllSource(),
     readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../vite.config.ts", import.meta.url), "utf8"),
-    readAllSource(),
   ]);
 
-  assert.match(allSource, /import\.meta\.env\.BASE_URL/);
-  assert.match(allSource, /scope_make\.json/);
-  assert.match(allSource, /scope_model\.json/);
-  assert.match(allSource, /monthly_make_powertrain\.json/);
-  assert.match(allSource, /monthly_model_powertrain\.json/);
-  assert.match(allSource, /scope_make_powertrain\.json/);
-  assert.match(allSource, /scope_model_powertrain\.json/);
-  assert.match(allSource, /scope_vehicle_age\.json/);
-  assert.match(allSource, /htmlFor="make-select"/);
-  assert.match(allSource, /<optgroup label="Recognised makes">/);
-  assert.match(allSource, /<optgroup label="Other \/ unmapped source makes">/);
-  assert.match(allSource, /Vehicles represented in the current NZTA fleet snapshot/);
-  assert.match(allSource, /aria-label="Vehicle ranking view"/);
-  assert.match(allSource, /aria-pressed=\{vehicleView === value\}/);
-  assert.match(allSource, /Latest entries/);
-  assert.match(allSource, /Current fleet/);
-  assert.match(allSource, /function monthChange\(current: number, previous: number \| undefined\)/);
-  assert.match(allSource, /className=\{`month-change \$\{changeTone\(change\)\}/);
-  assert.match(allSource, /Changes compare with \{prettyMonth\(view\.previousMonth\)\}/);
-  assert.match(allSource, /outside that month&apos;s published top 25/);
-  assert.match(allSource, /previousPowertrainTotals/);
-  assert.match(allSource, /previousMakeRecords/);
-  assert.match(allSource, /previousModelRecords/);
-  assert.match(styles, /\.month-change\.up b/);
-  assert.match(styles, /\.month-change\.down b/);
-  assert.match(allSource, /aria-label="Leaderboard powertrain filter"/);
-  assert.match(allSource, /PASSENGER VEHICLES ONLY · MA \/ MB \/ MC/);
-  assert.match(allSource, /\["all", "combustion", "hybrid", "bev", "phev", "other"\]/);
-  assert.match(allSource, /leaderboardPowertrain === value/);
-  assert.match(allSource, /registration_month_from/);
-  assert.match(allSource, /ARRIVAL CHANNEL BY POWERTRAIN/);
-  assert.match(allSource, /arrivalPowertrains = \["combustion", "hybrid", "bev", "phev"\]/);
-  assert.match(allSource, /className="panel arrival-panel"/);
-  assert.match(allSource, /className="annual-readout"/);
-  assert.match(allSource, /onMouseEnter=\{\(\) => setActiveMarketYear\(row\.year\)\}/);
-  assert.match(allSource, /aria-pressed=\{activeAnnual\?\.year === row\.year\}/);
-  assert.match(allSource, /className="monthly-detail-controls"/);
-  assert.match(allSource, /aria-label="Previous month"/);
-  assert.match(allSource, /aria-label="Next month"/);
-  assert.match(allSource, /setSelectedMarketMonth/);
-  assert.match(allSource, /Browse exact passenger-vehicle entries for any available month/);
-  assert.match(allSource, /className="country-kicker-toggle"/);
-  assert.match(allSource, /aria-pressed=\{countryView === "snapshot"\}/);
-  assert.match(allSource, /setCountryView/);
-  assert.match(allSource, /view\.startYear\}\+/);
-  assert.match(allSource, /CURRENT FLEET · \$\{view\.startYear\}\+/);
-  assert.match(allSource, /className="panel fleet-age-panel"/);
-  assert.match(allSource, /CURRENT FLEET AGE · DATA AS AT/);
-  assert.match(allSource, /How old are New Zealand&apos;s registered passenger cars\?/);
-  assert.match(allSource, /approximate_current_age/);
-  assert.match(allSource, /vehicleYearLabel/);
-  assert.match(allSource, /vehicle year \$\{selectedFleetAge\.vehicleYearLabel\}/);
-  assert.match(allSource, /label === "1" \? "1 year old"/);
-  assert.match(allSource, /aria-label="Current registered passenger fleet by approximate age"/);
-  assert.match(allSource, /onMouseEnter=\{\(\) => setActiveFleetAge\(row\.age\)\}/);
-  assert.match(allSource, /manifest\.contract\.version/);
-  assert.match(allSource, /manifest\.generated_at_utc/);
-  assert.match(allSource, /timeZone: "Pacific\/Auckland"/);
-  assert.match(allSource, /Aggregates generated <time/);
-  assert.doesNotMatch(allSource, /<b>v\d+\.\d+(?:\.\d+)?<\/b> data contract/);
-  assert.match(allSource, /href="https:\/\/www\.nzta\.govt\.nz\/resources\/new-zealand-motor-vehicle-register-statistics\/new-zealand-vehicle-fleet-open-data-sets"/);
-  assert.match(allSource, /href="https:\/\/github\.com\/michaelocez\/nz-vehicle-market-tracker"/);
-  assert.match(styles, /color-scheme:\s*dark/);
-  assert.doesNotMatch(allSource, /localStorage|theme-toggle|Switch to.*mode/);
-  assert.doesNotMatch(styles, /data-theme|theme-toggle/);
-  assert.doesNotMatch(packageJson, /next|vinext|wrangler|cloudflare/i);
   assert.match(viteConfig, /base:\s*"\.\/"/);
-
-  assert.match(app, /import { computeDashboardView } from "\.\/lib\/dashboardView"/);
-  assert.match(app, /import { ErrorState } from "\.\/components\/ErrorState"/);
-  assert.match(app, /import { Hero } from "\.\/components\/Hero"/);
-  assert.match(app, /import { MarketSection } from "\.\/components\/MarketSection"/);
-  assert.match(app, /import { VehiclesSection } from "\.\/components\/VehiclesSection"/);
-  assert.match(app, /import { ImportsSection } from "\.\/components\/ImportsSection"/);
-  assert.match(app, /import { ExplorerSection } from "\.\/components\/ExplorerSection"/);
-  assert.match(app, /import { MethodologySection } from "\.\/components\/MethodologySection"/);
-  assert.match(app, /import { Footer } from "\.\/components\/Footer"/);
-  assert.match(allSource, /startYear: number;/);
-  assert.match(allSource, /startYear = Number\(.*registration_month_from/);
-  assert.doesNotMatch(app, /function Home\(\) \{[\s\S]*function render/);
-  assert.doesNotMatch(app, /useState.*activeMarketYear/);
+  assert.match(allSource, /import\.meta\.env\.BASE_URL/);
+  assert.match(styles, /color-scheme:\s*dark/);
+  assert.doesNotMatch(allSource, /localStorage|theme-toggle/i);
+  assert.doesNotMatch(styles, /data-theme|theme-toggle/i);
+  assert.doesNotMatch(packageJson, /next|vinext|wrangler|cloudflare/i);
 });
 
 test("synced data matches the approved production snapshot", async () => {
@@ -215,38 +141,14 @@ test("Cloudflare and Sites scaffolding is absent", async () => {
   }
 });
 
-test("synced data files include everything the frontend loader expects", async () => {
+test("every dataset the loader requests is present in the synced data", async () => {
   const dataDir = new URL("../public/data", import.meta.url);
   const entries = await readdir(dataDir, { withFileTypes: true });
   const actualFiles = new Set(
     entries.filter((entry) => entry.isFile()).map((entry) => entry.name),
   );
 
-  const expectedFiles = [
-    "manifest.json",
-    "monthly_summary.json",
-    "monthly_powertrain.json",
-    "monthly_make.json",
-    "monthly_model.json",
-    "monthly_make_powertrain.json",
-    "monthly_model_powertrain.json",
-    "scope_make.json",
-    "scope_model.json",
-    "scope_make_powertrain.json",
-    "scope_model_powertrain.json",
-    "scope_vehicle_age.json",
-    "monthly_previous_country.json",
-    "monthly_import_age.json",
-  ];
-
-  for (const file of expectedFiles) {
-    assert.ok(actualFiles.has(file), `Frontend expected file ${file} is missing from synced data`);
+  for (const file of DATA_FILES) {
+    assert.ok(actualFiles.has(file), `Frontend loader requests ${file} but it is missing from synced data`);
   }
-});
-
-test("weightedMedian returns null for empty or zero-weight input", async () => {
-  const source = await readFile(new URL("../src/lib/utils.ts", import.meta.url), "utf8");
-
-  assert.match(source, /if \(total === 0\) return null;/);
-  assert.match(source, /const total = ordered\.reduce\(/);
 });

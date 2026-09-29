@@ -1,5 +1,5 @@
 import type { DashboardData } from "./types";
-import { makeOptionLabel } from "./utils";
+import { makeOptionLabel } from "./utils.ts";
 
 export interface ExplorerView {
   make: string;
