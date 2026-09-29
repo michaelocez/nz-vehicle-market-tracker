@@ -193,12 +193,13 @@ def test_manifest_quality_contains_all_counters_including_zeros(tmp_path: Path) 
 
     quality = result["quality"]
     assert set(quality) == EXPECTED_QUALITY_COUNTERS
-    for name in EXPECTED_QUALITY_COUNTERS:
-        assert name in quality
     assert quality["malformed_rows"] == 0
     assert quality["invalid_registration_month_rows"] == 0
     assert quality["non_passenger_rows"] == 0
     assert quality["excluded_import_age_missing_rows"] == 0
+
+
+def test_committed_contract_versions_match_the_pipeline_constant() -> None:
     root = Path(__file__).resolve().parents[1]
     document = (root / "docs" / "data-contract.md").read_text(encoding="utf-8")
     documented_version = re.search(r"Contract version: `([^`]+)`", document)
