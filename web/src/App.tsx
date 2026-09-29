@@ -58,9 +58,6 @@ export default function Home() {
 
   const activeAnnual = view.annual.find((row) => row.year === activeMarketYear) ?? view.annual.at(-1);
   const marketMonth = marketMonths.includes(selectedMarketMonth) ? selectedMarketMonth : view.latest;
-  const marketMonthIndex = marketMonths.indexOf(marketMonth);
-  const marketYears = [...new Set(marketMonths.map((month) => month.slice(0, 4)))];
-  const marketYearMonths = marketMonths.filter((month) => month.startsWith(marketMonth.slice(0, 4)));
   const marketMonthRecords = data.summary.records.filter((row) => row.registration_month === marketMonth);
   const marketCountFor = (status: string) =>
     marketMonthRecords.find((row) => row.import_status_group === status)?.registration_count ?? 0;
