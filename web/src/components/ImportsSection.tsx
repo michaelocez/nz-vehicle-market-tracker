@@ -56,7 +56,7 @@ export function ImportsSection({ view, countryView, setCountryView, topCountries
               <span className="panel-kicker">APPROXIMATE IMPORT AGE</span>
               <h3>Most comparable used imports arrive well-used.</h3>
             </div>
-            <strong>{view.medianAge}<small>median years</small></strong>
+            <strong>{view.medianAge ?? "—"}<small>median years</small></strong>
           </div>
           <div className="age-chart">
             {view.ageBuckets.map((row) => (
