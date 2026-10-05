@@ -32,11 +32,13 @@ test("build emits a GitHub Pages-compatible static entry point", async () => {
   assert.match(html, /<title>NZ Vehicle Market Tracker<\/title>/i);
   assert.match(html, /<div id="root"><\/div>/i);
   assert.match(html, /(?:src|href)="\.\/assets\//i);
-  assert.match(html, /rel="icon"[^>]+href="\.\/favicon\.png"/i);
+  assert.match(html, /rel="icon"[^>]+type="image\/svg\+xml"[^>]+href="\.\/favicon\.svg"/i);
+  assert.match(html, /rel="apple-touch-icon"[^>]+href="\.\/apple-touch-icon\.png"/i);
   assert.match(html, /rel="canonical" href="https:\/\/michaelocez\.github\.io\/nz-vehicle-market-tracker\/"/i);
   assert.match(html, /property="og:image" content="https:\/\/michaelocez\.github\.io\/nz-vehicle-market-tracker\/social-preview\.png"/i);
   assert.match(html, /name="twitter:card" content="summary_large_image"/i);
-  await access(new URL("../dist/favicon.png", import.meta.url));
+  await access(new URL("../dist/favicon.svg", import.meta.url));
+  await access(new URL("../dist/apple-touch-icon.png", import.meta.url));
   const socialPreview = await readFile(new URL("../dist/social-preview.png", import.meta.url));
   assert.equal(socialPreview.readUInt32BE(16), 1200);
   assert.equal(socialPreview.readUInt32BE(20), 630);
