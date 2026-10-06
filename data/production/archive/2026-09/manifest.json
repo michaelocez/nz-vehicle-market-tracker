@@ -428,42 +428,65 @@
       }
     ]
   },
+  "archive": {
+    "format_version": "1.0.0",
+    "kind": "compact_snapshot",
+    "monthly_dimensions": "snapshot_month_only",
+    "scope_dimensions": "full_snapshot",
+    "source_files": {
+      "monthly_brand_country": "efc41911e09ba7a851b50c520a18999954e14e409b15c63a211076048fb3fa9e",
+      "monthly_import_age": "ed428e5d7dae72c5722d4912daa7e2fecf5700306494124da7c25b785903eebd",
+      "monthly_make": "6e68dcb6d2865c78cb97048110bea87fbbdd26385d74b4b730e0139213da4857",
+      "monthly_make_powertrain": "0ab34283111748e55f42f7d19a0c658fb61b64586aa288787518eb630897c64b",
+      "monthly_model": "31550790397dbe17ba70fe408ddd91f1a9cd3ea13309a87baef6894f01ec06fe",
+      "monthly_model_powertrain": "8ce63d4a6f46888d60ac15a61354bf78c44fd5d9689f799b218c1de41aceab1e",
+      "monthly_powertrain": "3317bd20074abae18489abbd98dc2ddb5fb981d61dde5a2f6c98387f48bb3e88",
+      "monthly_previous_country": "cfd43fb1955f6451ec74b21591e00e58ef55809eab21e31ff6e2d0e0c6e3df90",
+      "monthly_summary": "d2618b812816ec2699a554255ac4542ab0868b182e1ba63af798465a7dbf508d",
+      "monthly_vehicle_year": "90860e3217400a459e4cdc54da1973d644b0a461ba8a65a8692c8725b7d6652c",
+      "scope_make": "a0196609055d31be8bb6656278e389264bf7ddcb20147ff449aacc67d3a0aac7",
+      "scope_make_powertrain": "29d7dd0e14c6f185649fec6c45982e3e6e4bdb097d80ef2aac3b21127de6b59a",
+      "scope_model": "11b27d5bde5391c4930a4c70709c32d0745561e1d8b494a6f3ac2c559c3965f1",
+      "scope_model_powertrain": "377921b5eedbc2c8c3df872b8356cd9e3bf8e84d8c713f878ea52b5d27969c37",
+      "scope_vehicle_age": "ee60bc08b9168a8e17e913c2cb99e9a29c36a9a4bf350fe67679c4f7ce6dc989"
+    }
+  },
   "files": {
     "monthly_summary": {
       "path": "monthly_summary.json",
-      "records": 711,
-      "bytes": 67348,
-      "sha256": "d2618b812816ec2699a554255ac4542ab0868b182e1ba63af798465a7dbf508d"
+      "records": 3,
+      "bytes": 350,
+      "sha256": "943b49067aa9bdfe5c1a3a5756801a238c699ce69f5432681952ca7e0670baae"
     },
     "monthly_powertrain": {
       "path": "monthly_powertrain.json",
-      "records": 2385,
-      "bytes": 292492,
-      "sha256": "3317bd20074abae18489abbd98dc2ddb5fb981d61dde5a2f6c98387f48bb3e88"
+      "records": 10,
+      "bytes": 1288,
+      "sha256": "8bcb3e34f5141a16983f30a67e7959b27bfded87039a99e73a97d500911314eb"
     },
     "monthly_make": {
       "path": "monthly_make.json",
-      "records": 23004,
-      "bytes": 3713930,
-      "sha256": "6e68dcb6d2865c78cb97048110bea87fbbdd26385d74b4b730e0139213da4857"
+      "records": 77,
+      "bytes": 12288,
+      "sha256": "2d2b7cfccd8f57aef44fde0097721f7e50bae6f7509774b9eb9f64ecf2388859"
     },
     "monthly_model": {
       "path": "monthly_model.json",
-      "records": 23336,
-      "bytes": 3113734,
-      "sha256": "31550790397dbe17ba70fe408ddd91f1a9cd3ea13309a87baef6894f01ec06fe"
+      "records": 78,
+      "bytes": 10353,
+      "sha256": "62fc637673153980f37608e8d396ee1b654854e14ec668c4d0275c7511454561"
     },
     "monthly_make_powertrain": {
       "path": "monthly_make_powertrain.json",
-      "records": 12453,
-      "bytes": 1940618,
-      "sha256": "0ab34283111748e55f42f7d19a0c658fb61b64586aa288787518eb630897c64b"
+      "records": 101,
+      "bytes": 15569,
+      "sha256": "4690021948d608ddb5dd9816d1c37e8c909b1281fb1cf467600f2add85889e34"
     },
     "monthly_model_powertrain": {
       "path": "monthly_model_powertrain.json",
-      "records": 15021,
-      "bytes": 1917813,
-      "sha256": "8ce63d4a6f46888d60ac15a61354bf78c44fd5d9689f799b218c1de41aceab1e"
+      "records": 102,
+      "bytes": 12940,
+      "sha256": "4deaf796b9aa1fc476246d5f835e41316d3f373641ed88ff7e2c01da8c29b049"
     },
     "scope_make": {
       "path": "scope_make.json",
@@ -497,27 +520,27 @@
     },
     "monthly_brand_country": {
       "path": "monthly_brand_country.json",
-      "records": 7505,
-      "bytes": 901773,
-      "sha256": "efc41911e09ba7a851b50c520a18999954e14e409b15c63a211076048fb3fa9e"
+      "records": 25,
+      "bytes": 3015,
+      "sha256": "51c8f801d1ba6e7f56770d8ca24608e4105603018741c0a2e88654bb4c8376af"
     },
     "monthly_previous_country": {
       "path": "monthly_previous_country.json",
-      "records": 2639,
-      "bytes": 231728,
-      "sha256": "cfd43fb1955f6451ec74b21591e00e58ef55809eab21e31ff6e2d0e0c6e3df90"
+      "records": 10,
+      "bytes": 945,
+      "sha256": "35b06d48fe37f850784d41f77daeb8d3e7954b6eedb07bffa8cc35b21b949062"
     },
     "monthly_vehicle_year": {
       "path": "monthly_vehicle_year.json",
-      "records": 16592,
-      "bytes": 2259365,
-      "sha256": "90860e3217400a459e4cdc54da1973d644b0a461ba8a65a8692c8725b7d6652c"
+      "records": 58,
+      "bytes": 7918,
+      "sha256": "b2042d0fe67325f1a0a791e8be4de937f4a75b3daacfdaaed90253e01c37e6ff"
     },
     "monthly_import_age": {
       "path": "monthly_import_age.json",
-      "records": 2429,
-      "bytes": 206528,
-      "sha256": "ed428e5d7dae72c5722d4912daa7e2fecf5700306494124da7c25b785903eebd"
+      "records": 20,
+      "bytes": 1767,
+      "sha256": "384d03992eec966fc9e9393b29c21b648bffe9c2a2e2a057cbded7e0e6ccd1cb"
     }
   }
 }
