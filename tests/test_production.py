@@ -214,7 +214,10 @@ def test_leaderboard_powertrain_groups_keep_main_options_and_combine_small_group
 
 def test_infers_snapshot_month() -> None:
     assert infer_snapshot_month("Fleet-30Jun2026.csv") == "2026-06"
+    assert infer_snapshot_month("Fleet-30Sept2026.csv") == "2026-09"
+    assert infer_snapshot_month("Fleet-1January2027.csv") == "2027-01"
     assert infer_snapshot_month("Fleet-test.csv") is None
+    assert infer_snapshot_month("Fleet-30Smarch2026.csv") is None
 
 
 def test_scope_model_totals_are_not_limited_by_monthly_leaderboard(tmp_path: Path) -> None:

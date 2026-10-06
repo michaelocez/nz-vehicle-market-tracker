@@ -36,12 +36,38 @@ __all__ = [
 ]
 
 
+_MONTH_NAMES = {
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
+}
+
+
 def infer_snapshot_month(member_name: str) -> str | None:
-    match = re.search(r"Fleet-(\d{2}[A-Za-z]{3}\d{4})", member_name)
+    """Derive ``YYYY-MM`` from a member name such as ``Fleet-30Sept2026.csv``.
+
+    NZTA is inconsistent about the abbreviation length (``Jun`` but ``Sept``),
+    so the month is matched loosely and resolved on its first three letters.
+    """
+
+    match = re.search(r"Fleet-(\d{1,2})([A-Za-z]{3,9})(\d{4})", member_name)
     if not match:
         return None
+    day, month_name, year = match.groups()
+    month = _MONTH_NAMES.get(month_name[:3].lower())
+    if month is None:
+        return None
     try:
-        return datetime.strptime(match.group(1), "%d%b%Y").replace(tzinfo=UTC).strftime("%Y-%m")
+        return datetime(int(year), month, int(day), tzinfo=UTC).strftime("%Y-%m")
     except ValueError:
         return None
 
