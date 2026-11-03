@@ -23,36 +23,36 @@
   },
   "source": {
     "file": "Fleet-data-all-vehicle-years.zip",
-    "member": "Fleet-30Sept2026.csv",
-    "snapshot_month": "2026-09"
+    "member": "Fleet-31Oct2026.csv",
+    "snapshot_month": "2026-10"
   },
-  "generated_at_utc": "2026-10-06T04:08:16.292448+00:00",
+  "generated_at_utc": "2026-11-03T12:52:42.185961+00:00",
   "quality": {
-    "before_start_month_rows": 385977,
-    "comparable_import_age_rows": 1027631,
-    "comparable_vehicle_year_rows": 2670503,
-    "current_fleet_age_rows": 3511633,
+    "before_start_month_rows": 383174,
+    "comparable_import_age_rows": 1032616,
+    "comparable_vehicle_year_rows": 2685192,
+    "current_fleet_age_rows": 3519754,
     "excluded_current_fleet_age_future_vehicle_year_rows": 0,
     "excluded_current_fleet_age_implausible_vehicle_year_rows": 1,
     "excluded_current_fleet_age_missing_or_invalid_vehicle_year_rows": 0,
     "excluded_import_age_implausible_rows": 33,
-    "excluded_import_age_legacy_vehicle_year_rows": 444707,
+    "excluded_import_age_legacy_vehicle_year_rows": 440988,
     "excluded_import_age_missing_rows": 0,
     "excluded_import_age_negative_rows": 9,
-    "included_rows": 3125651,
+    "included_rows": 3136575,
     "invalid_registration_month_rows": 6,
-    "legacy_vehicle_year_rows": 455148,
+    "legacy_vehicle_year_rows": 451383,
     "malformed_rows": 0,
-    "mapped_brand_rows": 3123912,
+    "mapped_brand_rows": 3134803,
     "missing_vehicle_year_rows": 0,
-    "non_passenger_rows": 2404531,
-    "passenger_rows": 3511634,
-    "source_rows": 5916165,
-    "unmapped_brand_rows": 1739,
-    "used_import_rows": 1472380
+    "non_passenger_rows": 2407235,
+    "passenger_rows": 3519755,
+    "source_rows": 5926990,
+    "unmapped_brand_rows": 1772,
+    "used_import_rows": 1473646
   },
   "brand_coverage": {
-    "mapped_share": 0.999443635901769,
+    "mapped_share": 0.9994350525652982,
     "unmapped_makes": [
       {
         "make": "ABARTH",
@@ -61,6 +61,10 @@
       {
         "make": "AC",
         "registration_count": 2
+      },
+      {
+        "make": "ACURA",
+        "registration_count": 1
       },
       {
         "make": "ALMAC",
@@ -92,7 +96,7 @@
       },
       {
         "make": "ARCFOX",
-        "registration_count": 47
+        "registration_count": 75
       },
       {
         "make": "AUBURN",
@@ -167,6 +171,10 @@
         "registration_count": 1
       },
       {
+        "make": "DAIMLER-BENZ",
+        "registration_count": 1
+      },
+      {
         "make": "DAVIS",
         "registration_count": 1
       },
@@ -176,7 +184,7 @@
       },
       {
         "make": "DE SOTO",
-        "registration_count": 17
+        "registration_count": 18
       },
       {
         "make": "DE TOMASO",
@@ -304,11 +312,11 @@
       },
       {
         "make": "LVV",
-        "registration_count": 580
+        "registration_count": 581
       },
       {
         "make": "LVVTA",
-        "registration_count": 622
+        "registration_count": 623
       },
       {
         "make": "MATRA",
@@ -431,93 +439,93 @@
   "files": {
     "monthly_summary": {
       "path": "monthly_summary.json",
-      "records": 711,
-      "bytes": 67348,
-      "sha256": "d2618b812816ec2699a554255ac4542ab0868b182e1ba63af798465a7dbf508d"
+      "records": 714,
+      "bytes": 67633,
+      "sha256": "b26794d6a926ec409b8fc3bc55bce4c720938c2819008cc056573388413f508c"
     },
     "monthly_powertrain": {
       "path": "monthly_powertrain.json",
-      "records": 2385,
-      "bytes": 292492,
-      "sha256": "3317bd20074abae18489abbd98dc2ddb5fb981d61dde5a2f6c98387f48bb3e88"
+      "records": 2398,
+      "bytes": 294103,
+      "sha256": "7cd5d52518eca99314c60c2f33f252be3bed619cac37f0f1e5670da63cc1f17c"
     },
     "monthly_make": {
       "path": "monthly_make.json",
-      "records": 23004,
-      "bytes": 3713930,
-      "sha256": "6e68dcb6d2865c78cb97048110bea87fbbdd26385d74b4b730e0139213da4857"
+      "records": 23105,
+      "bytes": 3730121,
+      "sha256": "60ae38d1c3b0cce153769cb2db7b863101c9a23d8e78bb22127b51a0d58b3cd3"
     },
     "monthly_model": {
       "path": "monthly_model.json",
-      "records": 23336,
-      "bytes": 3113734,
-      "sha256": "31550790397dbe17ba70fe408ddd91f1a9cd3ea13309a87baef6894f01ec06fe"
+      "records": 23430,
+      "bytes": 3126646,
+      "sha256": "20cdf4b2009c434b8ddd9f14c92ffcbb57405c92ce8581f00d22f6ccd4c2c628"
     },
     "monthly_make_powertrain": {
       "path": "monthly_make_powertrain.json",
-      "records": 12453,
-      "bytes": 1940618,
-      "sha256": "0ab34283111748e55f42f7d19a0c658fb61b64586aa288787518eb630897c64b"
+      "records": 12555,
+      "bytes": 1956247,
+      "sha256": "ee37a5580ac27831aa126f6093ea6fca41c45958c1c1c6e17009ad5abbe8960e"
     },
     "monthly_model_powertrain": {
       "path": "monthly_model_powertrain.json",
-      "records": 15021,
-      "bytes": 1917813,
-      "sha256": "8ce63d4a6f46888d60ac15a61354bf78c44fd5d9689f799b218c1de41aceab1e"
+      "records": 15206,
+      "bytes": 1941725,
+      "sha256": "2bef49871518b40d38699a7fe1609b24b73ca0cc44a5c23469ade0231b8b4830"
     },
     "scope_make": {
       "path": "scope_make.json",
-      "records": 576,
-      "bytes": 67184,
-      "sha256": "a0196609055d31be8bb6656278e389264bf7ddcb20147ff449aacc67d3a0aac7"
+      "records": 580,
+      "bytes": 67652,
+      "sha256": "0706bb39d18278c55300462e88d6e87d145ee6ef667ef88b1424a65b464aca0a"
     },
     "scope_model": {
       "path": "scope_model.json",
-      "records": 8437,
-      "bytes": 738215,
-      "sha256": "11b27d5bde5391c4930a4c70709c32d0745561e1d8b494a6f3ac2c559c3965f1"
+      "records": 8892,
+      "bytes": 779118,
+      "sha256": "05612dce1c66941ef130753b1671f84a6b9cd348fe64dd5f076489311dc49d76"
     },
     "scope_make_powertrain": {
       "path": "scope_make_powertrain.json",
-      "records": 108,
-      "bytes": 13018,
-      "sha256": "29d7dd0e14c6f185649fec6c45982e3e6e4bdb097d80ef2aac3b21127de6b59a"
+      "records": 109,
+      "bytes": 13131,
+      "sha256": "22be7f24bf0990e5cce45683f580cacadabe35887870aae91ea92a1aa8a51a40"
     },
     "scope_model_powertrain": {
       "path": "scope_model_powertrain.json",
-      "records": 113,
-      "bytes": 10481,
-      "sha256": "377921b5eedbc2c8c3df872b8356cd9e3bf8e84d8c713f878ea52b5d27969c37"
+      "records": 114,
+      "bytes": 10578,
+      "sha256": "7d22e851be6eaec93682cebae0483ccf958a6b527c245ed78b703127035baf91"
     },
     "scope_vehicle_age": {
       "path": "scope_vehicle_age.json",
       "records": 127,
       "bytes": 6625,
-      "sha256": "ee60bc08b9168a8e17e913c2cb99e9a29c36a9a4bf350fe67679c4f7ce6dc989"
+      "sha256": "8477a062fed3a18334f42ed9122120ffb288ea04d709435054ceb5d94eb5d78b"
     },
     "monthly_brand_country": {
       "path": "monthly_brand_country.json",
-      "records": 7505,
-      "bytes": 901773,
-      "sha256": "efc41911e09ba7a851b50c520a18999954e14e409b15c63a211076048fb3fa9e"
+      "records": 7542,
+      "bytes": 906218,
+      "sha256": "724c1ea89eb2fc549d69f81f1f40115e5afdb87161113da0d56680676e537b5a"
     },
     "monthly_previous_country": {
       "path": "monthly_previous_country.json",
-      "records": 2639,
-      "bytes": 231728,
-      "sha256": "cfd43fb1955f6451ec74b21591e00e58ef55809eab21e31ff6e2d0e0c6e3df90"
+      "records": 2646,
+      "bytes": 232347,
+      "sha256": "4a976e743341b3ecdb542001dd3ff8cbdf169462fc462a5a1723eef0385c8b3b"
     },
     "monthly_vehicle_year": {
       "path": "monthly_vehicle_year.json",
-      "records": 16592,
-      "bytes": 2259365,
-      "sha256": "90860e3217400a459e4cdc54da1973d644b0a461ba8a65a8692c8725b7d6652c"
+      "records": 16671,
+      "bytes": 2270129,
+      "sha256": "65b3db050ab1e89175c55b22003a43f28c5258101ff9e9301dce108dc451e031"
     },
     "monthly_import_age": {
       "path": "monthly_import_age.json",
-      "records": 2429,
-      "bytes": 206528,
-      "sha256": "ed428e5d7dae72c5722d4912daa7e2fecf5700306494124da7c25b785903eebd"
+      "records": 2448,
+      "bytes": 208141,
+      "sha256": "86bba19bb21d74b8889a89fa4f1b0dc3df4fefca53888ab2b8c9cb3e695bd76d"
     }
   }
 }

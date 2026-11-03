@@ -1,0 +1,554 @@
+{
+  "contract": {
+    "version": "1.3.0",
+    "scope": {
+      "vehicle_type": "PASSENGER CAR/VAN",
+      "classes": [
+        "MA",
+        "MB",
+        "MC"
+      ],
+      "registration_month_from": "2007-01",
+      "import_age_vehicle_year_from": 2007,
+      "legacy_vehicle_years_in_counts": true,
+      "leaderboard_limit_per_month_and_status": 25,
+      "leaderboard_powertrain_groups": [
+        "combustion",
+        "hybrid",
+        "bev",
+        "phev",
+        "other"
+      ]
+    }
+  },
+  "source": {
+    "file": "Fleet-data-all-vehicle-years.zip",
+    "member": "Fleet-31Oct2026.csv",
+    "snapshot_month": "2026-10"
+  },
+  "generated_at_utc": "2026-11-03T12:52:42.185961+00:00",
+  "quality": {
+    "before_start_month_rows": 383174,
+    "comparable_import_age_rows": 1032616,
+    "comparable_vehicle_year_rows": 2685192,
+    "current_fleet_age_rows": 3519754,
+    "excluded_current_fleet_age_future_vehicle_year_rows": 0,
+    "excluded_current_fleet_age_implausible_vehicle_year_rows": 1,
+    "excluded_current_fleet_age_missing_or_invalid_vehicle_year_rows": 0,
+    "excluded_import_age_implausible_rows": 33,
+    "excluded_import_age_legacy_vehicle_year_rows": 440988,
+    "excluded_import_age_missing_rows": 0,
+    "excluded_import_age_negative_rows": 9,
+    "included_rows": 3136575,
+    "invalid_registration_month_rows": 6,
+    "legacy_vehicle_year_rows": 451383,
+    "malformed_rows": 0,
+    "mapped_brand_rows": 3134803,
+    "missing_vehicle_year_rows": 0,
+    "non_passenger_rows": 2407235,
+    "passenger_rows": 3519755,
+    "source_rows": 5926990,
+    "unmapped_brand_rows": 1772,
+    "used_import_rows": 1473646
+  },
+  "brand_coverage": {
+    "mapped_share": 0.9994350525652982,
+    "unmapped_makes": [
+      {
+        "make": "ABARTH",
+        "registration_count": 7
+      },
+      {
+        "make": "AC",
+        "registration_count": 2
+      },
+      {
+        "make": "ACURA",
+        "registration_count": 1
+      },
+      {
+        "make": "ALMAC",
+        "registration_count": 15
+      },
+      {
+        "make": "ALPINA",
+        "registration_count": 1
+      },
+      {
+        "make": "ALPINE",
+        "registration_count": 8
+      },
+      {
+        "make": "ALVIS",
+        "registration_count": 13
+      },
+      {
+        "make": "AM GENERAL",
+        "registration_count": 10
+      },
+      {
+        "make": "AMC",
+        "registration_count": 35
+      },
+      {
+        "make": "AMERICAN",
+        "registration_count": 4
+      },
+      {
+        "make": "ARCFOX",
+        "registration_count": 75
+      },
+      {
+        "make": "AUBURN",
+        "registration_count": 10
+      },
+      {
+        "make": "AUTECH ZAGATO",
+        "registration_count": 1
+      },
+      {
+        "make": "AUTO UNION",
+        "registration_count": 3
+      },
+      {
+        "make": "BOLWELL",
+        "registration_count": 1
+      },
+      {
+        "make": "BORGWARD",
+        "registration_count": 1
+      },
+      {
+        "make": "BRICKLIN",
+        "registration_count": 2
+      },
+      {
+        "make": "BRISTOL",
+        "registration_count": 5
+      },
+      {
+        "make": "BUGATTI",
+        "registration_count": 7
+      },
+      {
+        "make": "CAN-AM",
+        "registration_count": 1
+      },
+      {
+        "make": "CASE",
+        "registration_count": 1
+      },
+      {
+        "make": "CATERHAM",
+        "registration_count": 13
+      },
+      {
+        "make": "CHANDLER",
+        "registration_count": 1
+      },
+      {
+        "make": "CLENET",
+        "registration_count": 1
+      },
+      {
+        "make": "CONTINENTAL",
+        "registration_count": 2
+      },
+      {
+        "make": "CORD",
+        "registration_count": 3
+      },
+      {
+        "make": "COUNTESS",
+        "registration_count": 2
+      },
+      {
+        "make": "CUSTOMBUILT",
+        "registration_count": 6
+      },
+      {
+        "make": "DACIA",
+        "registration_count": 1
+      },
+      {
+        "make": "DAIMLER-BENZ",
+        "registration_count": 1
+      },
+      {
+        "make": "DAVIS",
+        "registration_count": 1
+      },
+      {
+        "make": "DE LOREAN",
+        "registration_count": 21
+      },
+      {
+        "make": "DE SOTO",
+        "registration_count": 18
+      },
+      {
+        "make": "DE TOMASO",
+        "registration_count": 10
+      },
+      {
+        "make": "DELAGE",
+        "registration_count": 3
+      },
+      {
+        "make": "DIATTO",
+        "registration_count": 1
+      },
+      {
+        "make": "DIXON",
+        "registration_count": 1
+      },
+      {
+        "make": "DS AUTOMOBILES",
+        "registration_count": 2
+      },
+      {
+        "make": "EDSEL",
+        "registration_count": 21
+      },
+      {
+        "make": "ELDDIS",
+        "registration_count": 1
+      },
+      {
+        "make": "ESSEX",
+        "registration_count": 2
+      },
+      {
+        "make": "EUNOS",
+        "registration_count": 7
+      },
+      {
+        "make": "EXCALIBUR",
+        "registration_count": 9
+      },
+      {
+        "make": "FACTORY BUILT",
+        "registration_count": 50
+      },
+      {
+        "make": "GINETTA",
+        "registration_count": 2
+      },
+      {
+        "make": "GRAHAM",
+        "registration_count": 2
+      },
+      {
+        "make": "HILLMAN",
+        "registration_count": 3
+      },
+      {
+        "make": "HINO",
+        "registration_count": 1
+      },
+      {
+        "make": "HOMEBUILT",
+        "registration_count": 5
+      },
+      {
+        "make": "HUDSON",
+        "registration_count": 11
+      },
+      {
+        "make": "HUMBER",
+        "registration_count": 3
+      },
+      {
+        "make": "HUPMOBILE",
+        "registration_count": 5
+      },
+      {
+        "make": "IMPERIAL",
+        "registration_count": 2
+      },
+      {
+        "make": "INTERNATIONAL",
+        "registration_count": 1
+      },
+      {
+        "make": "ISO",
+        "registration_count": 2
+      },
+      {
+        "make": "JENSEN",
+        "registration_count": 16
+      },
+      {
+        "make": "JEWETT",
+        "registration_count": 1
+      },
+      {
+        "make": "JOWETT",
+        "registration_count": 2
+      },
+      {
+        "make": "JUNEYAO",
+        "registration_count": 2
+      },
+      {
+        "make": "KAISER",
+        "registration_count": 2
+      },
+      {
+        "make": "KTM",
+        "registration_count": 2
+      },
+      {
+        "make": "LADA",
+        "registration_count": 1
+      },
+      {
+        "make": "LAGONDA",
+        "registration_count": 3
+      },
+      {
+        "make": "LEYLAND",
+        "registration_count": 20
+      },
+      {
+        "make": "LVV",
+        "registration_count": 581
+      },
+      {
+        "make": "LVVTA",
+        "registration_count": 623
+      },
+      {
+        "make": "MATRA",
+        "registration_count": 1
+      },
+      {
+        "make": "MAYBACH",
+        "registration_count": 1
+      },
+      {
+        "make": "MCC",
+        "registration_count": 25
+      },
+      {
+        "make": "MITSUOKA",
+        "registration_count": 6
+      },
+      {
+        "make": "NASH",
+        "registration_count": 2
+      },
+      {
+        "make": "NSU",
+        "registration_count": 1
+      },
+      {
+        "make": "OAKLAND",
+        "registration_count": 1
+      },
+      {
+        "make": "OVERLAND",
+        "registration_count": 1
+      },
+      {
+        "make": "PAGANI",
+        "registration_count": 1
+      },
+      {
+        "make": "PANTHER",
+        "registration_count": 1
+      },
+      {
+        "make": "RAMBLER",
+        "registration_count": 12
+      },
+      {
+        "make": "RELIANT",
+        "registration_count": 6
+      },
+      {
+        "make": "REWACO",
+        "registration_count": 1
+      },
+      {
+        "make": "RILEY",
+        "registration_count": 8
+      },
+      {
+        "make": "SACHSENRING",
+        "registration_count": 3
+      },
+      {
+        "make": "SATURN",
+        "registration_count": 2
+      },
+      {
+        "make": "SAXON",
+        "registration_count": 1
+      },
+      {
+        "make": "SHAY",
+        "registration_count": 2
+      },
+      {
+        "make": "SHELBY",
+        "registration_count": 2
+      },
+      {
+        "make": "SINGER",
+        "registration_count": 3
+      },
+      {
+        "make": "SKYWORTH",
+        "registration_count": 2
+      },
+      {
+        "make": "STUTZ",
+        "registration_count": 1
+      },
+      {
+        "make": "SWALLOW",
+        "registration_count": 4
+      },
+      {
+        "make": "T CAR",
+        "registration_count": 2
+      },
+      {
+        "make": "TALBOT",
+        "registration_count": 1
+      },
+      {
+        "make": "VETERAN",
+        "registration_count": 3
+      },
+      {
+        "make": "VINTAGE",
+        "registration_count": 4
+      },
+      {
+        "make": "WESTFIELD",
+        "registration_count": 2
+      },
+      {
+        "make": "WOLSELEY",
+        "registration_count": 3
+      }
+    ]
+  },
+  "archive": {
+    "format_version": "1.0.0",
+    "kind": "compact_snapshot",
+    "monthly_dimensions": "snapshot_month_only",
+    "scope_dimensions": "full_snapshot",
+    "source_files": {
+      "monthly_brand_country": "724c1ea89eb2fc549d69f81f1f40115e5afdb87161113da0d56680676e537b5a",
+      "monthly_import_age": "86bba19bb21d74b8889a89fa4f1b0dc3df4fefca53888ab2b8c9cb3e695bd76d",
+      "monthly_make": "60ae38d1c3b0cce153769cb2db7b863101c9a23d8e78bb22127b51a0d58b3cd3",
+      "monthly_make_powertrain": "ee37a5580ac27831aa126f6093ea6fca41c45958c1c1c6e17009ad5abbe8960e",
+      "monthly_model": "20cdf4b2009c434b8ddd9f14c92ffcbb57405c92ce8581f00d22f6ccd4c2c628",
+      "monthly_model_powertrain": "2bef49871518b40d38699a7fe1609b24b73ca0cc44a5c23469ade0231b8b4830",
+      "monthly_powertrain": "7cd5d52518eca99314c60c2f33f252be3bed619cac37f0f1e5670da63cc1f17c",
+      "monthly_previous_country": "4a976e743341b3ecdb542001dd3ff8cbdf169462fc462a5a1723eef0385c8b3b",
+      "monthly_summary": "b26794d6a926ec409b8fc3bc55bce4c720938c2819008cc056573388413f508c",
+      "monthly_vehicle_year": "65b3db050ab1e89175c55b22003a43f28c5258101ff9e9301dce108dc451e031",
+      "scope_make": "0706bb39d18278c55300462e88d6e87d145ee6ef667ef88b1424a65b464aca0a",
+      "scope_make_powertrain": "22be7f24bf0990e5cce45683f580cacadabe35887870aae91ea92a1aa8a51a40",
+      "scope_model": "05612dce1c66941ef130753b1671f84a6b9cd348fe64dd5f076489311dc49d76",
+      "scope_model_powertrain": "7d22e851be6eaec93682cebae0483ccf958a6b527c245ed78b703127035baf91",
+      "scope_vehicle_age": "8477a062fed3a18334f42ed9122120ffb288ea04d709435054ceb5d94eb5d78b"
+    }
+  },
+  "files": {
+    "monthly_summary": {
+      "path": "monthly_summary.json",
+      "records": 3,
+      "bytes": 350,
+      "sha256": "99c05f1f418d8d5135ccc7774eea353a18778bc7b04eea7c78b4a2dc5c56c788"
+    },
+    "monthly_powertrain": {
+      "path": "monthly_powertrain.json",
+      "records": 11,
+      "bytes": 1425,
+      "sha256": "550c53e157605296a457f744464c07ee375205d5b1715a329b42130b04e972b6"
+    },
+    "monthly_make": {
+      "path": "monthly_make.json",
+      "records": 76,
+      "bytes": 12118,
+      "sha256": "9bf73bd7f652907522e002137dc46797bbd10e548c3b8f140a6a05aecd4affea"
+    },
+    "monthly_model": {
+      "path": "monthly_model.json",
+      "records": 76,
+      "bytes": 10066,
+      "sha256": "442a9e1dc7bd1ee3fc5cc5494d76a143655cf25007620d53f921415930b9b79d"
+    },
+    "monthly_make_powertrain": {
+      "path": "monthly_make_powertrain.json",
+      "records": 102,
+      "bytes": 15689,
+      "sha256": "6bf0fbb9bda518b77db72548b143e670de632c92122d55318a510a19a6123eb7"
+    },
+    "monthly_model_powertrain": {
+      "path": "monthly_model_powertrain.json",
+      "records": 103,
+      "bytes": 13095,
+      "sha256": "3524b7b6d15a4e329dd6b50d88d39cb27b42781ad2deb408fef12abd4247df0a"
+    },
+    "scope_make": {
+      "path": "scope_make.json",
+      "records": 580,
+      "bytes": 67652,
+      "sha256": "0706bb39d18278c55300462e88d6e87d145ee6ef667ef88b1424a65b464aca0a"
+    },
+    "scope_model": {
+      "path": "scope_model.json",
+      "records": 8892,
+      "bytes": 779118,
+      "sha256": "05612dce1c66941ef130753b1671f84a6b9cd348fe64dd5f076489311dc49d76"
+    },
+    "scope_make_powertrain": {
+      "path": "scope_make_powertrain.json",
+      "records": 109,
+      "bytes": 13131,
+      "sha256": "22be7f24bf0990e5cce45683f580cacadabe35887870aae91ea92a1aa8a51a40"
+    },
+    "scope_model_powertrain": {
+      "path": "scope_model_powertrain.json",
+      "records": 114,
+      "bytes": 10578,
+      "sha256": "7d22e851be6eaec93682cebae0483ccf958a6b527c245ed78b703127035baf91"
+    },
+    "scope_vehicle_age": {
+      "path": "scope_vehicle_age.json",
+      "records": 127,
+      "bytes": 6625,
+      "sha256": "8477a062fed3a18334f42ed9122120ffb288ea04d709435054ceb5d94eb5d78b"
+    },
+    "monthly_brand_country": {
+      "path": "monthly_brand_country.json",
+      "records": 26,
+      "bytes": 3141,
+      "sha256": "c503dee5ea054cd09eb22f49c8cd527b767754811202e948336f6f6023d314b3"
+    },
+    "monthly_previous_country": {
+      "path": "monthly_previous_country.json",
+      "records": 8,
+      "bytes": 773,
+      "sha256": "4fcc56b464769bd92f652d7e75218768aac8547f2f407c593be2025acbb6a415"
+    },
+    "monthly_vehicle_year": {
+      "path": "monthly_vehicle_year.json",
+      "records": 58,
+      "bytes": 7912,
+      "sha256": "c8111b4d1a328e4a687425e475803d1b1c2da4f7e94fd56394b26b92e66f48ce"
+    },
+    "monthly_import_age": {
+      "path": "monthly_import_age.json",
+      "records": 19,
+      "bytes": 1683,
+      "sha256": "134a7aed085dc0b4d5c021b2eebdbb84b45900a990de1fcac3e49236da7e4b81"
+    }
+  }
+}
